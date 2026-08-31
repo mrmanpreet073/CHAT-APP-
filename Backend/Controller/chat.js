@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Chat } from "../Models/chat.js";
 import { Message } from "../Models/message.js";
 import { User } from "../Models/user.js";
@@ -493,10 +494,21 @@ export const sendAttachments = async (req, res) => {
 export const getChatDetails = async (req, res) => {
 
     try {
+        const chatId = req.params.id;
+
+        if (!mongoose.Types.ObjectId.isValid(chatId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid chat ID",
+            });
+        }
+
         if (req.query.populate === "true") {
-            const chat = await Chat.findById(req.params.id)
+            const chat = await Chat.findById(chatId)
                 .populate("members", "name avatar")
                 .lean();
+
+
 
             if (!chat) {
                 return res.status(404).json({
@@ -701,7 +713,7 @@ export const getMessages = async (req, res) => { // g
                 .limit(resultPerPage)
                 .populate("sender", "name",).populate("chat", "name groupChat")
                 .lean(),
-             
+
             Message.countDocuments({ chat: chatId }),
         ]);
 
@@ -712,7 +724,7 @@ export const getMessages = async (req, res) => { // g
             messages: messages.reverse(),
             totalPages,
         });
-        
+
     } catch (error) {
         return res.status(500).json({
             success: false,

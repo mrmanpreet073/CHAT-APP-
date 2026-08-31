@@ -5,6 +5,7 @@ import { User } from "../Models/user.js";
 import { Chat } from "../Models/chat.js";
 import { Request } from "../Models/request.js";
 import { getOtherMember } from "../Utils/helper.js";
+import e from "express";
 
 
 
@@ -85,6 +86,11 @@ export const register = async (req, res) => {
                 public_id: result.public_id,
                 url: result.url,
             };
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Avatar is required"
+            });
         }
         const user = await User.create({
             name,

@@ -89,57 +89,113 @@ export const allChats = async (req, res) => { // Get all chats with members and 
 
 
 export const allMessages = async (req, res) => {
-    try {
-        // Get all messages and populate sender and chat information
-        const messages = await Message.find({})
-            .populate({
-                path: "sender",
-                select: "name avatar",
-            })
-            .populate({
-                path: "chat",
-                select: "groupChat",
-            });
+  try {
+    // Get all messages and populate sender and chat information
+    const messages = await Message.find({})
+      .populate({
+        path: "sender",
+        select: "name avatar",
+      })
+      .populate({
+        path: "chat",
+        select: "groupChat",
+      });
 
-        // Transform messages into a frontend-friendly format
-        const transformedMessages = messages.map(
-            ({
-                content,
-                attachments,
-                _id,
-                sender,
-                createdAt,
-                chat,
-            }) => ({
-                _id,
-                attachments,
-                content,
-                createdAt,
+    // Transform messages into a frontend-friendly format
+    const transformedMessages = messages.map(
+      ({
+        content,
+        attachments,
+        _id,
+        sender,
+        createdAt,
+        chat,
+      }) => ({
+        _id,
+        attachments,
+        content,
+        createdAt,
 
-                // Chat information
-                chat: chat?._id,
-                groupChat: chat?.groupChat,
+        // Chat information
+        chat: chat?._id,
+        groupChat: chat?.groupChat,
 
-                // Sender information
-                sender: sender
-                    ? {
-                          _id: sender._id,
-                          name: sender.name,
-                          avatar: sender.avatar?.url || "",
-                      }
-                    : null,
-            })
-        );
+        // Sender information
+        sender: sender
+          ? {
+            _id: sender._id,
+            name: sender.name,
+            avatar: sender.avatar?.url || "",
+          }
+          : null,
+      })
+    );
 
-        return res.status(200).json({
-            success: true,
-            messages: transformedMessages,
-        });
+    return res.status(200).json({
+      success: true,
+      messages: transformedMessages,
+    });
 
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
+
+export const getDashboardStats = async (req, res) => {
+
+  try {
+    const [groupsCount, usersCount, messagesCount, totalChatsCount] =
+      await Promise.all([
+        Chat.countDocuments({ groupChat: true }),
+        User.countDocuments(),
+        Message.countDocuments(),
+        Chat.countDocuments(),
+      ]);
+
+    const today = new Date();// Get today's date
+
+    const last7Days = new Date();//
+    last7Days.setDate(last7Days.getDate() - 7);// Get the date 7 days ago
+
+    const last7DaysMessages = await Message.find({// Find messages created in the last 7 days
+      createdAt: {
+        $gte: last7Days,
+        $lte: today,
+      },
+    }).select("createdAt");
+
+    const messages = new Array(7).fill(0);
+    const dayInMiliseconds = 1000 * 60 * 60 * 24;
+
+    last7DaysMessages.forEach((message) => {// For each message, calculate the index in the messages array based on the createdAt date
+      const indexApprox =
+        (today.getTime() - message.createdAt.getTime()) / dayInMiliseconds;// Calculate the approximate index
+      const index = Math.floor(indexApprox);
+
+      messages[6 - index]++;  //
+    });
+
+    const stats = {
+      groupsCount,
+      usersCount,
+      messagesCount,
+      totalChatsCount,
+      messagesChart: messages,
+    };
+
+    return res.status(200).json({
+      success: true,
+      stats,
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+
+}

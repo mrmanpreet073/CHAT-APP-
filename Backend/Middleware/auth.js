@@ -41,7 +41,7 @@ export const authenticate = async (req, res, next) => {
             })
         }
         // console.log("decoded user",decoded);
-        
+
 
         const user = await User.findById(decoded.id)
         if (!user) {
@@ -61,6 +61,24 @@ export const authenticate = async (req, res, next) => {
 
 };
 
+export const adminOnly = (req, res, next) => {
+
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: "Please login first",
+        });
+    }
+
+    if (!req.user.isAdmin) {
+        return res.status(403).json({
+            success: false,
+            message: "Access denied. Admin only.",
+        });
+    }
+
+    next();
+};
 // export const isAdmin = async (req, res, next) => {
 
 //     if(req.user && req.user.role==="admin"){
