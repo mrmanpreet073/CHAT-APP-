@@ -23,7 +23,8 @@ const PORT = process.env.PORT || 3000;
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173' || process.env.FRONTEND_URL,
+        origin: 'http://localhost:5173',
+        credentials: true,
     }
 });
 
@@ -43,6 +44,7 @@ const userSocketIDs = new Map();
 const onlineUsers = new Set();
 
 // seedUsers(19)
+
 
 io.on("connection", (socket) => {
     // const user = socket.user;

@@ -7,6 +7,7 @@ import FindPeopleModal from '@/Component/FindPeopleModal.jsx';
 import { toast } from 'sonner';
 import NotificationsModal from '@/Component/NotificationsModal.jsx';
 import api from '@/Utils/axios.js';
+import { getSocket } from '@/Socket.jsx';
 
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -17,6 +18,8 @@ export default function ChatPage() {
   const [chats, setChats] = useState([])
 
 
+const socket = getSocket();
+console.log("SocketId",socket?.id);
 
   // Mock Users Data
   // const chats = [
