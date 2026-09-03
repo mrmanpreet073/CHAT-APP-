@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import api from "@/Utils/axios";
 import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/Redux/reducers/auth";
 
 
 // import { toast } from "sonner";
@@ -13,6 +15,7 @@ import { toast } from "sonner";
 const Login = () => {
 
     const [showPassword, setShowPassword] = useState(false);
+    const dispatch = useDispatch();
 
     const {
         register,
@@ -24,8 +27,7 @@ const Login = () => {
         console.log(data);
 
         try {
-        const response = await api.post(
-            "/user/login",
+        const response = await api.post("/user/login",
             {
                 userName: data.userName,
                 password: data.password,
@@ -36,16 +38,14 @@ const Login = () => {
         if(response.data.accessToken) {
             localStorage.setItem("accessToken", response.data.accessToken);
         }
-
-       
-
+        dispatch(setUser(response.data.user));
         toast.success(response.data.message);
 
         // navigate("/chat");
 
     } catch (error) {
+        
         console.error(error);
-
         toast.error(
             error.response?.data?.message ||
             "Login failed"

@@ -6,6 +6,7 @@ import { Chat } from "../Models/chat.js";
 import { Request } from "../Models/request.js";
 import { getOtherMember } from "../Utils/helper.js";
 import e from "express";
+import { uploadToCloudinary } from "../Utils/cloudinary.js";
 
 
 
@@ -23,32 +24,7 @@ export const health = async (req, res) => {
 
 };
 
-const uploadToCloudinary = (buffer) => {
-    return new Promise((resolve, reject) => {
 
-
-        const stream = cloudinary.uploader.upload_stream(
-            {
-                folder: "chat-app/avatars",
-            },
-            (error, result) => {
-
-
-                if (error) {
-
-                    reject(error);
-                } else {
-
-                    resolve(result);
-                }
-            }
-        );
-
-
-        stream.end(buffer);
-
-    });
-};
 
 export const register = async (req, res) => {
     try {
@@ -194,6 +170,29 @@ export const login = async (req, res) => {
         });
     }
 };
+
+export const getMyProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            user,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
 
 export const searchUser = async (req, res) => {
     try {
@@ -403,7 +402,10 @@ export const getMyFriends = async (req, res) => {
         const chats = await Chat.find({
             members: req.user._id,
             groupChat: false,
-        }).populate("members", "name avatar");
+        }).populate("members", "name avatar bio");
+
+        // console.log(chats);
+
 
         // Get the other user from each private chat
         const friends = chats.map(({ members }) => {
@@ -411,11 +413,14 @@ export const getMyFriends = async (req, res) => {
                 members,
                 req.user._id
             );
+            console.log("BIO:", otherUser);
+            console.log("TYPE:", typeof otherUser.bio);
 
             return {
                 _id: otherUser._id,
                 name: otherUser.name,
                 avatar: otherUser.avatar?.url || "",
+                bio: otherUser.bio || ""
             };
         });
 
@@ -443,6 +448,7 @@ export const getMyFriends = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 friends: availableFriends,
+
             });
         }
 
@@ -450,6 +456,7 @@ export const getMyFriends = async (req, res) => {
         return res.status(200).json({
             success: true,
             friends,
+
         });
 
     } catch (error) {

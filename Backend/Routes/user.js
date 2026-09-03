@@ -11,6 +11,7 @@ router.post('/register', singleAvatar,validateAvatar,registerValidator, validate
 router.post('/login',loginValidator,validate, controller.login);
 
 router.use(authenticate); // Apply the authenticate middleware to all routes below this line
+router.get('/userInfo', controller.getMyProfile);
 router.get('/searchUser', controller.searchUser);
 router.post('/sendRequest', controller.sendFriendRequest);
 router.post('/requestResponse', controller.acceptFriendRequest);

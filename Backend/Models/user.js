@@ -45,6 +45,11 @@ const schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    bio: {
+      type: String,
+      default: ""
+    }
+
   },
   {
     timestamps: true,
