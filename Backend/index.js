@@ -11,10 +11,11 @@ import { createMessagesInAChat, createSingleChats } from './seed/chatSeeder.js';
 import { v4 as uuid } from "uuid"
 import { Server } from "socket.io";
 import { createServer } from "http";
-import { NEW_MESSAGE } from './Utils/events.js';
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from './Utils/events.js';
 import { Message } from './Models/message.js';
-import { log } from 'console';
 import { getSockets } from './Utils/helper.js';
+import { authenticateSocket } from './Middleware/authenticateSocket.js';
+import { log } from 'console';
 
 
 const app = express();
@@ -40,55 +41,78 @@ app.use('/user', router);
 app.use('/chat', chatRouter)
 app.use('/admin', adminRouter)
 
-const userSocketIDs = new Map();
+export const userSocketIDs = new Map();
 const onlineUsers = new Set();
 
-// seedUsers(19)
+io.use(async (socket, next) => {
+    try {
+        const token = socket.handshake.auth.token || socket.handshake.query.token;
+        // console.log("BACKEND TOKEN:", token);
+        await authenticateSocket(socket, token);
+        // console.log("Authentication successful");
+        next();
+    } catch (error) {
+        console.log("Authentication failed:", error.message);
+
+        next(new Error(error.message));
+    }
+});
+
 
 
 io.on("connection", (socket) => {
-    // const user = socket.user;
-    // console.log("socket user = ", socket.user);
-    const user = {
-        _id: "fsfsf",
-        name: "dopeglaner"
-    }
+
+    const user = socket.user;
 
     userSocketIDs.set(user._id.toString(), socket.id);
-    console.log("userSocketIDs", userSocketIDs);
+    console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
 
+    socket.on("disconnect", () => {
+        console.log("USER DISCONNECTED:", user._id.toString(), "SOCKET:", socket.id);
+        if (userSocketIDs.get(user._id.toString()) === socket.id) {
+            userSocketIDs.delete(user._id.toString());
+        }
+    });
 
-    socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
-        const messageForRealTime = {
-            content: message,
-            _id: uuid(),
-            sender: {
-                _id: user._id,
-                name: user.name,
-            },
-            chat: chatId,
-            createdAt: new Date().toISOString(),
-        };
+    socket.on("NEW_MESSAGE", async ({ chatId, members, message }) => {
+        try {
+            const messageForDB = {
+                content: message,
+                sender: user._id,
+                chat: chatId,
+            };
 
-        const messageForDB = {
-            content: message,
-            sender: user._id,
-            chat: chatId,
-        };
-        console.log("message for db=", messageForDB);
+            const newMessage = await Message.create(messageForDB);
 
-        const membersSocket = getSockets(members);
-        io.to(membersSocket).emit(NEW_MESSAGE, {
-            chatId,
-            message: messageForRealTime,
-        });
-        // io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId });
+            const messageForRealTime = {
+                _id: newMessage._id,
+                content: newMessage.content,
+                sender: {
+                    _id: user._id,
+                    name: user.name,
+                },
+                chat: chatId,
+                createdAt: newMessage.createdAt,
+            };
 
-        // try {
-        //     await Message.create(messageForDB);
-        // } catch (error) {
-        //     throw new Error(error);
-        // }
+            const membersSocket = getSockets(members);
+
+            // console.log("EMITTING NEW_MESSAGE TO:", membersSocket);
+            io.to(membersSocket).emit("NEW_MESSAGE", {
+                chatId,
+                message: messageForRealTime,
+            });
+
+            // io.to(socket.id).emit("TEST_MESSAGE", {
+            //     message: "Hello from server",
+            // });
+            io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
+                chatId,
+            });
+
+        } catch (error) {
+            console.error("Message error:", error);
+        }
     });
 
 });

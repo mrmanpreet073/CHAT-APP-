@@ -13,6 +13,7 @@ router.post('/addMembers', addMemberValidator, validate, authenticate, controlle
 router.post('/removeMember', removeMemberValidator, validate, authenticate, controller.removeMember);
 router.post('/leaveGroup/:id', authenticate, controller.leaveGroup);
 router.post('/message', sendAttachmentsValidator, validate, authenticate, attachmentUpload, controller.sendAttachments);
+router.post('/getChatId/:userId', authenticate, controller.getChatId);
 
 router.route("/:id")
   .get(chatIdValidator,validate, authenticate, controller.getChatDetails)

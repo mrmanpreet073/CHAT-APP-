@@ -1,7 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Paperclip, Send, User } from 'lucide-react';
+import { getSocket } from '@/Socket.jsx';
+import { NEW_MESSAGE } from '@/Utils/events.js';
+import api from '@/Utils/axios';
 
-export default function ChatArea({ chat, onBack, onToggleProfile }) {
+export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members }) {
+  // console.log("chat",chat);
+  const socket = getSocket()
+  const [messages, setMessages] = useState([]);
+
+  const handleSubmit = () => {
+    if (!message.trim()) return;
+    socket.emit(NEW_MESSAGE, { chatId, members, message });
+    setMessage("");
+  }
+  
+  console.log("FRONTEND SOCKET:", socket.id);
+
+
+
+
+  useEffect(() => {
+    console.log("4. UseEffect Run");
+    const handleNewMessage = ({ chatId, message }) => {
+
+      console.log("Message Recieved", message);
+
+      setMessages((prev) => [
+        ...prev,
+        message
+      ]);
+    };
+    socket.on(NEW_MESSAGE, handleNewMessage);
+    return () => {
+      socket.off(NEW_MESSAGE, handleNewMessage);
+    };
+  }, [socket]);
+
+
+  // useEffect(() => {
+  //   const handleNewMessage = (data) => {
+  //     console.log("🔥🔥 MESSAGE RECEIVED:", data);
+  //   };
+
+  //   socket.on(NEW_MESSAGE, handleNewMessage);
+
+  //   return () => {
+  //     socket.off(NEW_MESSAGE, handleNewMessage);
+  //   };
+  // }, [socket]);
+
+  // useEffect(() => {
+  //   socket.on("TEST_MESSAGE", (data) => {
+  //     console.log("🔥 TEST MESSAGE RECEIVED:", data);
+  //   });
+
+  //   return () => {
+  //     socket.off("TEST_MESSAGE");
+  //   };
+  // }, [socket]);
+
+  const [message, setMessage] = useState("")
   if (!chat) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center text-[#8696a0] p-6 text-center">
@@ -11,7 +70,11 @@ export default function ChatArea({ chat, onBack, onToggleProfile }) {
         <p className="text-lg text-[#e9edef]">Select a user to start chatting</p>
       </div>
     );
+
   }
+
+console.log("messages",messages);
+
 
   return (
     <div className="flex flex-col h-full">
@@ -28,8 +91,8 @@ export default function ChatArea({ chat, onBack, onToggleProfile }) {
           </div>
         </div>
 
-        <button 
-          onClick={onToggleProfile} 
+        <button
+          onClick={onToggleProfile}
           className="text-[#aebac1] hover:text-[#00a884] text-xs font-medium px-3 py-1.5 rounded-md bg-[#111b21]/50 border border-[#222d34]"
         >
           View Profile
@@ -38,33 +101,65 @@ export default function ChatArea({ chat, onBack, onToggleProfile }) {
 
       {/* Message Stream */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0b141a]">
-        {/* Left Message */}
-        <div className="flex flex-col items-start">
-          <div className="bg-[#202c33] text-[#e9edef] p-3 rounded-lg rounded-tl-none max-w-[80%] md:max-w-[60%] shadow">
-            <span className="block text-xs font-medium text-[#00a884] mb-1">{chat.name}</span>
-            <p className="text-sm">Hey! How are you doing today?</p>
-            <span className="block text-[10px] text-[#8696a0] text-right mt-1">20 days ago</span>
-          </div>
-        </div>
 
-        {/* Right Message */}
-        <div className="flex flex-col items-end">
-          <div className="bg-[#005c4b] text-[#e9edef] p-3 rounded-lg rounded-tr-none max-w-[80%] md:max-w-[60%] shadow">
-            <p className="text-sm">I am doing great! Working on the new app design.</p>
-            <span className="block text-[10px] text-[#8696a0] text-right mt-1">20 days ago</span>
-          </div>
-        </div>
+        {messages.map((msg) => {
+
+          const isMyMessage =
+            msg.sender._id != chat._id;
+
+            console.log("isMyMessage",isMyMessage);
+            
+
+          return (
+            <div
+              key={msg._id}
+              className={`flex ${isMyMessage
+                ? "justify-end"
+                : "justify-start"
+                }`}
+            >
+              <div
+                className={`px-3 py-1 rounded-lg max-w-[80%] md:max-w-[60%] ${isMyMessage
+                  ? "bg-[#005c4b]"
+                  : "bg-[#202c33]"
+                  }`}
+              >
+                {!isMyMessage && (
+                  <span className="block text-xs font-medium text-[#00a884] mb-1">
+                    {/* {msg.sender.name} */}
+                  </span>
+                )}
+
+                <p className="text-sm ">
+                  {msg.content}
+                </p>
+
+                <span className="block text-[10px] text-[#8696a0] text-right mt-1">
+                  {new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+
       </div>
 
       {/* Input Box */}
       <div className="p-3 bg-[#202c33] flex items-center gap-3 border-t border-[#222d34] shrink-0">
         <button className="text-[#aebac1] hover:text-white"><Paperclip size={20} /></button>
-        <input 
-          type="text" 
-          placeholder="Type Message Here..." 
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => (setMessage(e.target.value))}
+          placeholder="Type Message Here..."
           className="flex-1 bg-[#2a3942] text-sm text-[#e9edef] placeholder-[#8696a0] px-4 py-2.5 rounded-lg outline-none border border-transparent focus:border-[#00a884]"
         />
-        <button className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#029071] text-[#111b21] flex items-center justify-center transition-transform active:scale-95">
+        <button
+          onClick={() => handleSubmit()}
+          className="w-10 h-10 rounded-full bg-[#00a884] hover:bg-[#029071] text-[#111b21] flex items-center justify-center transition-transform active:scale-95">
           <Send size={18} />
         </button>
       </div>

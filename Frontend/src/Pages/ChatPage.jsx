@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../Component/Navbar.jsx';
 import Sidebar from '../Component/Sidebar.jsx';
 import ChatArea from '../Component/ChatArea.jsx';
@@ -16,10 +16,35 @@ export default function ChatPage() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [requests, setRequests] = useState([])
   const [chats, setChats] = useState([])
+  const [chatId, setChatId] = useState(null);
+  const [members, setMembers] = useState([]);
 
 
-const socket = getSocket();
-console.log("SocketId",socket?.id);
+  const socket = getSocket();
+  // console.log("selected Chat", selectedChat);
+
+  // console.log("SocketId",socket?.id);
+  // const chatId = selectedChat._id
+
+
+  const getChatId = async (userId) => {
+    try {
+      const response = await api.post(`/chat/getChatId/${userId}`);
+
+      if (response.data.success) {
+        setChatId(response.data.chatId);
+        setMembers(response.data.members);
+      }
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedChat?._id) {
+      getChatId(selectedChat._id);
+    }
+  }, [selectedChat]);
 
   // Mock Users Data
   // const chats = [
@@ -45,6 +70,18 @@ console.log("SocketId",socket?.id);
   //     }
   //   }])
 
+  // const chatDetail = async () => {
+  //   // Get chat details and also extrat members of the chat for sending to emit msg
+  //   try {
+  //     const response = api.get(`api/chat/${chatId}`)
+  //     console.log("Chat Detail Response" );
+
+  //   } catch (error) {
+  //     console.log(error.response);
+  //     // toast.error(error.message)
+  //   }
+  // }
+
 
   const handleAcceptRequest = async (requestId) => {
 
@@ -54,7 +91,7 @@ console.log("SocketId",socket?.id);
         requestId,
         accept: true
       })
-      console.log(response);
+      // console.log(response);
 
       if (response.data.success) {
         // 2. Remove the request from local state so it disappears instantly
@@ -119,6 +156,8 @@ console.log("SocketId",socket?.id);
             chat={selectedChat}
             onBack={() => setSelectedChat(null)}
             onToggleProfile={() => setShowProfile(!showProfile)}
+            chatId={chatId}
+            members={members}
           />
         </div>
 

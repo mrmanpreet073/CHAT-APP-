@@ -12,11 +12,11 @@ router.post('/login',loginValidator,validate, controller.login);
 
 router.use(authenticate); // Apply the authenticate middleware to all routes below this line
 router.get('/userInfo', controller.getMyProfile);
-router.get('/searchUser', controller.searchUser);
-router.post('/sendRequest', controller.sendFriendRequest);
-router.post('/requestResponse', controller.acceptFriendRequest);
-router.post('/notification', controller.getMyNotifications);
-router.post('/friends', controller.getMyFriends);// gives the list of friends of the user 
+router.get('/searchUser',authenticate, controller.searchUser);
+router.post('/sendRequest',authenticate, controller.sendFriendRequest);
+router.post('/requestResponse',authenticate, controller.acceptFriendRequest);
+router.post('/notification',authenticate, controller.getMyNotifications);
+router.post('/friends',authenticate, controller.getMyFriends);// gives the list of friends of the user 
 
 
 export default router;

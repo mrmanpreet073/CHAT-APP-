@@ -413,8 +413,8 @@ export const getMyFriends = async (req, res) => {
                 members,
                 req.user._id
             );
-            console.log("BIO:", otherUser);
-            console.log("TYPE:", typeof otherUser.bio);
+            // console.log("BIO:", otherUser);
+            // console.log("TYPE:", typeof otherUser.bio);
 
             return {
                 _id: otherUser._id,

@@ -1,21 +1,23 @@
-import { createContext, useMemo, useContext } from "react";
+import { createContext, useContext } from "react";
 import io from "socket.io-client";
-// import { server } from "./constants/config";
-
 
 const SocketContext = createContext();
 const getSocket = () => useContext(SocketContext);
+
+const accessToken = localStorage.getItem("accessToken");
+
+// ✅ created once, at module load — not inside the component
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  auth: { token: accessToken },
+  withCredentials: true,
+});
+
 const SocketProvider = ({ children }) => {
-
-    const socket = useMemo(() => io(import.meta.env.VITE_BACKEND_URL, { withCredentials: true }), []);
-
-    return (
-        <SocketContext.Provider value={socket}>
-            {children}
-        </SocketContext.Provider>
-    );
+  return (
+    <SocketContext.Provider value={socket}>
+      {children}
+    </SocketContext.Provider>
+  );
 };
-
-
 
 export { SocketProvider, getSocket };

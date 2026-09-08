@@ -239,7 +239,6 @@ export const addMembers = async (req, res, next) => {
     }
 };
 
-
 export const removeMember = async (req, res) => {
     try {
         const { userId, chatId } = req.body;
@@ -621,8 +620,6 @@ export const renameGroup = async (req, res) => {
     }
 };
 
-
-
 // export const deleteChat = async (req, res) => {
 //     try {
 //         const chatId = req.params.id;
@@ -733,3 +730,33 @@ export const getMessages = async (req, res) => { // g
     }
 
 }
+export const getChatId = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        // console.log("userId , user ", userId,req.user._id.toString());
+
+        const chat = await Chat.findOne({
+            groupChat: false,
+            members: { $all: [req.user._id, userId] }
+        });
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: "Chat not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            chatId: chat._id,
+            members: chat.members
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};

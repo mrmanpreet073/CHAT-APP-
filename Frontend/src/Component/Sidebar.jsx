@@ -42,7 +42,7 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats })
           const isSelected = selectedChat?.id === chat.id;
           return (
             <div
-              key={chat.id}
+              key={chat?._id}
               onClick={() => onSelectChat(chat)}
               className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors hover:bg-[#2e3e48e0] border-b border-[#2e3c459c]  ${isSelected ? 'bg-[#1f2a31]' : 'hover:bg-[#354854]'
                 }`}
