@@ -5,20 +5,17 @@ import { NEW_MESSAGE } from '@/Utils/events.js';
 import api from '@/Utils/axios';
 
 export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members }) {
-  // console.log("chat",chat);
   const socket = getSocket()
   const [messages, setMessages] = useState([]);
+
+  console.log("Frontend Token",socket.id);
+  
 
   const handleSubmit = () => {
     if (!message.trim()) return;
     socket.emit(NEW_MESSAGE, { chatId, members, message });
     setMessage("");
   }
-  
-  console.log("FRONTEND SOCKET:", socket.id);
-
-
-
 
   useEffect(() => {
     console.log("4. UseEffect Run");
@@ -37,28 +34,27 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
     };
   }, [socket]);
 
+  // Fetching Old Messages 
+  const getMessages = async (chatId) => {
+    try {
+      console.log("GET MEssages Run");
 
-  // useEffect(() => {
-  //   const handleNewMessage = (data) => {
-  //     console.log("🔥🔥 MESSAGE RECEIVED:", data);
-  //   };
+      const response = await api.post(`/chat/getChatMessages/${chatId}`);
+      console.log("message Response", response);
 
-  //   socket.on(NEW_MESSAGE, handleNewMessage);
+      if (response.data.success) {
+        setMessages(response.data.messages); // Replace with DB messages
+      }
+    } catch (error) {
+      console.log("Error Fetching Messages", error.message);
 
-  //   return () => {
-  //     socket.off(NEW_MESSAGE, handleNewMessage);
-  //   };
-  // }, [socket]);
+    }
+  };
 
-  // useEffect(() => {
-  //   socket.on("TEST_MESSAGE", (data) => {
-  //     console.log("🔥 TEST MESSAGE RECEIVED:", data);
-  //   });
+  useEffect(() => {
+    if (chatId) getMessages(chatId);
+  }, [chatId]);
 
-  //   return () => {
-  //     socket.off("TEST_MESSAGE");
-  //   };
-  // }, [socket]);
 
   const [message, setMessage] = useState("")
   if (!chat) {
@@ -73,7 +69,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
   }
 
-console.log("messages",messages);
+  console.log("messages", messages);
 
 
   return (
@@ -107,8 +103,8 @@ console.log("messages",messages);
           const isMyMessage =
             msg.sender._id != chat._id;
 
-            console.log("isMyMessage",isMyMessage);
-            
+          console.log("isMyMessage", isMyMessage);
+
 
           return (
             <div
