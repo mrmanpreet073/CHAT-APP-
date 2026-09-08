@@ -20,7 +20,7 @@ router.route("/:id")
   .put(renameValidator,validate,authenticate, controller.renameGroup)
 //   .delete(chatIdValidator(), deleteChat);
 
-router.post('/getChatMessages/:id', authenticate, controller.getMessages);
+router.get('/getChatMessages/:id', authenticate, controller.getMessages);
 
 
 export default router;

@@ -682,9 +682,9 @@ export const getMessages = async (req, res) => { // g
 
         const chatId = req.params.id;
         // console.log("chatId = ", chatId);
-        const { page = 1 } = req.query;
+        const page = Number(req.query.page) || 1;
 
-        const resultPerPage = 5;
+        const resultPerPage = 20;
         const skip = (page - 1) * resultPerPage;
 
         const chat = await Chat.findById(chatId);
@@ -716,10 +716,13 @@ export const getMessages = async (req, res) => { // g
 
         const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
 
+        const hasMore = totalPages-page === 0  ? false : true
+
         return res.status(200).json({
             success: true,
             messages: messages.reverse(),
             totalPages,
+            hasMore
         });
 
     } catch (error) {
