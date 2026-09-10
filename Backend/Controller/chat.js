@@ -3,6 +3,8 @@ import { Chat } from "../Models/chat.js";
 import { Message } from "../Models/message.js";
 import { User } from "../Models/user.js";
 import { uploadFilesToCloudinary } from "../Utils/cloudinary.js";
+import { io, userSocketIDs } from "../index.js";
+import { NEW_MESSAGE } from "../Utils/events.js";
 
 export const newGroupChat = async (req, res) => {
 
@@ -450,6 +452,7 @@ export const sendAttachments = async (req, res) => {
             });
         }
 
+
         //   Upload files here
         const attachments = await uploadFilesToCloudinary(files);
 
@@ -469,6 +472,17 @@ export const sendAttachments = async (req, res) => {
         };
 
         const message = await Message.create(messageForDB);
+
+        const membersSocket = chat.members
+            .map(member => userSocketIDs.get(member.toString()))
+            .filter(Boolean);
+
+        // 5. Send attachment message in real-time
+        io.to(membersSocket).emit(NEW_MESSAGE, {
+            chatId,
+            message
+        });
+
 
         //   emitEvent(req, NEW_MESSAGE, chat.members, {
         //     message: messageForRealTime,
@@ -716,7 +730,7 @@ export const getMessages = async (req, res) => { // g
 
         const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
 
-        const hasMore = totalPages-page === 0  ? false : true
+        const hasMore = totalPages - page === 0 ? false : true
 
         return res.status(200).json({
             success: true,

@@ -11,7 +11,6 @@ import {
 
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
-import axios from "axios";
 import { toast } from "sonner";
 import api from "@/Utils/axios.js";
 
@@ -44,7 +43,8 @@ const Signup = () => {
 
 
     const onSubmit = async (data) => {
-
+        console.log("SUBMIT FUNCTION CALLED");
+        console.log("FORM DATA:", data);
         try {
             const formData = new FormData();
 
@@ -61,12 +61,15 @@ const Signup = () => {
                 formData
             );
 
-          if(response.data.success) {
-            toast.success(response.data.message);
-            setTimeout(() => {
-                navigate("/login");
-            }, 2000);
-          }
+            console.log("response", response);
+            
+
+            if (response.data.success) {
+                toast.success(response.data.message);
+                setTimeout(() => {
+                    navigate("/login");
+                }, 2000);
+            }
 
 
             console.log(response.data);

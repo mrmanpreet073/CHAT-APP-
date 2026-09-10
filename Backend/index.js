@@ -22,7 +22,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const server = createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
     cors: {
         origin: 'http://localhost:5173',
         credentials: true,
@@ -53,11 +53,9 @@ io.use(async (socket, next) => {
         next();
     } catch (error) {
         console.log("Authentication failed:", error.message);
-
         next(new Error(error.message));
     }
 });
-
 
 
 io.on("connection", (socket) => {
@@ -65,7 +63,7 @@ io.on("connection", (socket) => {
     const user = socket.user;
 
     userSocketIDs.set(user._id.toString(), socket.id);
-    console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
+    // console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
 
     socket.on("disconnect", () => {
         console.log("USER DISCONNECTED:", user._id.toString(), "SOCKET:", socket.id);
@@ -74,7 +72,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("NEW_MESSAGE", async ({ chatId, members, message }) => {
+    socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
         try {
             const messageForDB = {
                 content: message,
@@ -98,7 +96,7 @@ io.on("connection", (socket) => {
             const membersSocket = getSockets(members);
 
             // console.log("EMITTING NEW_MESSAGE TO:", membersSocket);
-            io.to(membersSocket).emit("NEW_MESSAGE", {
+            io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
             });

@@ -2,12 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { X, Check, X as RejectIcon, Bell } from 'lucide-react';
 import api from '@/Utils/axios';
 import { toast } from 'sonner';
+import { getSocket } from '@/Socket.jsx';
 
-export default function NotificationsModal({ isOpen, onClose, onAccept, onReject,requests, setRequests }) {
+export default function NotificationsModal({ isOpen, onClose, onAccept, onReject, requests, setRequests, number, setNumber }) {
 
   // const [requests, setRequests] = useState([])
   const [filterRequests, setFilterRequests] = useState([])
   const [loading, setLoading] = useState(false)
+
+  const socket = getSocket();
+
+  // setNumber(requests.length)
 
   useEffect(() => {
 
@@ -16,8 +21,12 @@ export default function NotificationsModal({ isOpen, onClose, onAccept, onReject
       try {
         const response = await api.post("/user/notification");
         // Accessing response array directly
-        // console.log(response)
+        console.log(response)
         setRequests(response.data.allRequests || []);
+        console.log("Reload response = ", response);
+
+        setNumber(response.data.allRequests.length)
+
       } catch (error) {
         console.error(error.response);
         // toast.error(
@@ -31,6 +40,29 @@ export default function NotificationsModal({ isOpen, onClose, onAccept, onReject
     fetchNotifications();
 
   }, [])
+
+  useEffect(() => {
+    const handleNotification = (data) => {
+      console.log("Notification Received:", data);
+
+      setRequests((prev) => {
+        const updatedRequests = [...prev, data.request];
+
+        setNumber(updatedRequests.length);
+
+        return updatedRequests;
+      });
+    };
+
+    socket.on("NOTIFICATION", handleNotification);
+
+    return () => {
+      socket.off("NOTIFICATION", handleNotification);
+    };
+  }, [socket]);
+
+
+
   if (!isOpen) return null;
 
   return (

@@ -12,7 +12,7 @@ router.get('/myGroups', authenticate, controller.getMyGroups);
 router.post('/addMembers', addMemberValidator, validate, authenticate, controller.addMembers);
 router.post('/removeMember', removeMemberValidator, validate, authenticate, controller.removeMember);
 router.post('/leaveGroup/:id', authenticate, controller.leaveGroup);
-router.post('/message', sendAttachmentsValidator, validate, authenticate, attachmentUpload, controller.sendAttachments);
+router.post('/message', attachmentUpload,sendAttachmentsValidator, validate, authenticate , controller.sendAttachments);
 router.post('/getChatId/:userId', authenticate, controller.getChatId);
 
 router.route("/:id")

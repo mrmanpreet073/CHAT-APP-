@@ -1,10 +1,18 @@
-import React, {useEffect,useState,useRef,useLayoutEffect} from 'react';
-import { ArrowLeft, Paperclip, Send, User } from 'lucide-react';
+import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { ArrowLeft, Loader2, Paperclip, Send, User, X } from 'lucide-react';
 import { getSocket } from '@/Socket.jsx';
 import { NEW_MESSAGE } from '@/Utils/events.js';
 import api from '@/Utils/axios';
 
-export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,members}) {
+import {
+  Image,
+  Music,
+  Video,
+  File
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members }) {
 
   const socket = getSocket();
 
@@ -25,6 +33,19 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
   // Used when older messages are loaded
   const isLoadingOlderMessages = useRef(false);
   const previousScrollHeight = useRef(0);
+
+
+  const [showAttachments, setShowAttachments] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [sendingLoading, setSendingLoading] = useState(false);
+
+  const imageInputRef = useRef(null);
+  const audioInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+
+  const [selectedImage, setSelectedImage] = useState(null);
 
 
   // -----------------------------------
@@ -76,14 +97,14 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
 
     const container = e.currentTarget;
 
-    if (container.scrollTop === 0 &&hasMore &&!loading) {
+    if (container.scrollTop === 0 && hasMore && !loading) {
       setPage((prev) => prev + 1);
     }
   };
   // -----------------------------------
   // GET MESSAGES
   // -----------------------------------
-  const getMessages = async (chatId,pageNumber = 1) => {
+  const getMessages = async (chatId, pageNumber = 1) => {
 
     try {
 
@@ -111,15 +132,12 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
 
           if (container) {
             // Store current scroll height
-            previousScrollHeight.current =
-              container.scrollHeight;
+            previousScrollHeight.current = container.scrollHeight;
           }
           // Tell layout effect that these are OLD messages
           isLoadingOlderMessages.current = true;
-          setMessages((prev) => [
-            ...newMessages,
-            ...prev
-          ]);
+          setMessages((prev) => [...newMessages, ...prev]);
+
         }
         setHasMore(response.data.hasMore);
       }
@@ -221,6 +239,51 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
     );
   }
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (!files.length || files.length > 5) {
+
+      toast.error("Minimum 1 and Maximum 5 Files Allowed")
+    }
+
+    setSelectedFiles(files);
+    setShowAttachments(false);
+
+    console.log("Selected files:", files);
+
+    sendAttachment(files)
+
+  };
+  // we are Here /';l[;-================================================================]
+  const sendAttachment = async (files) => {
+
+    try {
+      setSendingLoading(true)
+      toast.message("Sending ... Wait 🟢")
+      const formData = new FormData();
+
+      formData.append("chatId", chatId);
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+      console.log("form Data = ", formData);
+
+      const response = await api.post("/chat/message", formData)
+      console.log(response);
+
+      if (response.data.success) {
+        toast.success("Attchment Sent Successfully ✅")
+      }
+    } catch (error) {
+      console.log(error.response);
+      toast.error("failed to send Image ❌")
+    } finally {
+      setSendingLoading(false)
+    }
+  }
+
   return (
 
     <div className="flex flex-col h-full">
@@ -253,7 +316,7 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
           </div>
 
         </div>
- 
+
         <button
           onClick={onToggleProfile}
           className="text-[#aebac1] hover:text-[#00a884] text-xs font-medium px-3 py-1.5 rounded-md bg-[#111b21]/50 border border-[#222d34]"
@@ -289,15 +352,15 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
             <div
               key={msg._id}
               className={`flex ${isMyMessage
-                  ? "justify-end"
-                  : "justify-start"
+                ? "justify-end"
+                : "justify-start"
                 }`}
             >
 
               <div
-                className={`px-3 py-1 rounded-lg max-w-[80%] md:max-w-[60%] ${isMyMessage
-                    ? "bg-[#005c4b]"
-                    : "bg-[#202c33]"
+                className={`px-1 py-2 rounded-lg max-w-[80%] md:max-w-[60%] ${isMyMessage
+                  ? "bg-[#005c4b]"
+                  : "bg-[#202c33]"
                   }`}
               >
 
@@ -312,6 +375,34 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
                 <p className="text-sm break-words whitespace-pre-wrap">
                   {msg.content}
                 </p>
+                {msg.attachments?.map((attachment) => (
+
+                  <img
+                    key={attachment._id}
+                    src={attachment.url}
+                    alt="Attachment"
+                    className=" h-55 rounded-lg"
+                    onClick={()=>setSelectedImage(attachment.url)}
+                  />
+
+                ))}
+                {selectedImage && (
+                  <div
+                    className="  fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+                    
+                  >
+                    <img
+                      src={selectedImage}
+                      alt="Full size"
+                      className="max-w-full max-h-full object-contain rounded-lg"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <X size={40}
+                     onClick={() => setSelectedImage(null)}
+                    className="text-gray-300 hover:text-green-600 cursor-pointer absolute top-8 right-10 "
+                    />
+                  </div>
+                )}
 
 
                 <span className="block text-[10px] text-[#8696a0] text-right mt-1">
@@ -331,6 +422,11 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
           );
 
         })}
+        {
+          //   <div>
+          //  {sendingLoading ? <Loader2 className='animate-spin' /> : <span></span> }
+          //   </div>
+        }
 
       </div>
 
@@ -340,21 +436,99 @@ export default function ChatArea({  chat,  onBack,  onToggleProfile,  chatId,mem
 
       <div className="p-3 bg-[#202c33] flex items-center gap-3 border-t border-[#222d34] shrink-0">
 
-        <button className="text-[#aebac1] hover:text-white">
-          <Paperclip size={20} />
-        </button>
+        <div className="relative">
 
+          {showAttachments && (
+            <div className="absolute bottom-12 left-0 bg-[#233138] rounded-xl shadow-xl p-2 w-40 space-y-1">
+
+              <button
+                onClick={() => imageInputRef.current.click()}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#2a3942] text-[#e9edef]"
+              >
+                <Image size={18} />
+                <span className="text-sm">Image</span>
+              </button>
+
+              <button
+                onClick={() => audioInputRef.current.click()}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#2a3942] text-[#e9edef]"
+              >
+                <Music size={18} />
+                <span className="text-sm">Audio</span>
+              </button>
+
+              <button
+                onClick={() => videoInputRef.current.click()}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#2a3942] text-[#e9edef]"
+              >
+                <Video size={18} />
+                <span className="text-sm">Video</span>
+              </button>
+
+              <button
+                onClick={() => fileInputRef.current.click()}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#2a3942] text-[#e9edef]"
+              >
+                <File size={18} />
+                <span className="text-sm">File</span>
+              </button>
+
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowAttachments(prev => !prev)}
+            className="text-[#aebac1] hover:text-white"
+          >
+            <Paperclip size={20} />
+          </button>
+
+          {/* Hidden inputs */}
+
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={handleFileChange}
+          />
+
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*"
+            multiple
+            hidden
+            onChange={handleFileChange}
+          />
+
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            multiple
+            hidden
+            onChange={handleFileChange}
+          />
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            hidden
+            onChange={handleFileChange}
+          />
+
+        </div>
 
         <input
           type="text"
           value={message}
-          onChange={(e) =>
-            setMessage(e.target.value)
-          }
+          onChange={(e) => setMessage(e.target.value)}
           placeholder="Type Message Here..."
           className="flex-1 bg-[#2a3942] text-sm text-[#e9edef] placeholder-[#8696a0] px-4 py-2.5 rounded-lg outline-none border border-transparent focus:border-[#00a884]"
         />
-
 
         <button
           onClick={handleSubmit}

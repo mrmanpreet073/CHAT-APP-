@@ -19,6 +19,9 @@ export default function ChatPage() {
   const [chatId, setChatId] = useState(null);
   const [members, setMembers] = useState([]);
 
+  const [number, setNumber] = useState(0)
+
+
 
   const socket = getSocket();
   // console.log("selected Chat", selectedChat);
@@ -134,7 +137,11 @@ export default function ChatPage() {
       {/* Top Navbar */}
       <Navbar
         onSearchClick={() => setIsSearchOpen(true)}
-        onNotificationClick={() => setIsNotificationOpen(true)} />
+        onNotificationClick={() => setIsNotificationOpen(true)}
+        number={number}
+        setNumber={setNumber}
+        
+        />
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -184,6 +191,8 @@ export default function ChatPage() {
         onClose={() => setIsNotificationOpen(false)}
         onAccept={handleAcceptRequest}
         onReject={handleRejectRequest}
+         number={number}
+        setNumber={setNumber}
       />
     </div>
   );

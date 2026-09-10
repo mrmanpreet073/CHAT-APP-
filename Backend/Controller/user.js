@@ -7,6 +7,7 @@ import { Request } from "../Models/request.js";
 import { getOtherMember } from "../Utils/helper.js";
 import e from "express";
 import { uploadToCloudinary } from "../Utils/cloudinary.js";
+import { io, userSocketIDs } from "../index.js";
 
 
 
@@ -29,8 +30,16 @@ export const health = async (req, res) => {
 export const register = async (req, res) => {
     try {
 
+        console.log("!. Controller Reached")
+
         const { name, userName, password } = req.body;
 
+        console.log("2 - body received", {
+            name,
+            userName,
+            password,
+            file: !!req.file
+        });
 
         if (!name || !userName || !password) {
             return res.status(400).json({
@@ -42,6 +51,7 @@ export const register = async (req, res) => {
 
         const existingUser = await User.findOne({ userName });
 
+        console.log("3 - User.findOne completed");
 
         if (existingUser) {
             return res.status(409).json({
@@ -52,29 +62,37 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        console.log("4 - bcrypt completed");
 
         let avatar = {};
+        console.log("5 - starting Cloudinary upload");
 
         if (req.file) {
 
             const result = await uploadToCloudinary(req.file.buffer);
+            console.log("Cloudinary result:", result);
+
             avatar = {
                 public_id: result.public_id,
                 url: result.url,
             };
+            console.log("6 - Cloudinary upload completed", result);
+
         } else {
             return res.status(400).json({
                 success: false,
                 message: "Avatar is required"
             });
         }
+        console.log("7 - creating user");
+
         const user = await User.create({
             name,
             userName,
             password: hashedPassword,
             avatar,
         });
-
+        console.log("8 - user created");
         const accessToken = jwt.sign(
             {
                 userId: user._id,
@@ -231,7 +249,6 @@ export const searchUser = async (req, res) => {
 }
 
 export const sendFriendRequest = async (req, res, next) => {
-
     try {
         const { userId } = req.body;
 
@@ -265,12 +282,25 @@ export const sendFriendRequest = async (req, res, next) => {
             });
         }
 
-        await Request.create({
+        const newRequest = await Request.create({
             sender: req.user._id,
             receiver: userId,
         });
 
-        // emitEvent(req, NEW_REQUEST, [userId]);
+        const receiverSocketId = userSocketIDs.get(userId.toString());
+
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("NOTIFICATION", {
+                request: {
+                    _id: newRequest._id,
+                    sender: {
+                        _id: req.user._id,
+                        name: req.user.name,
+                        avatar: req.user.avatar?.url,
+                    }
+                }
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -283,7 +313,7 @@ export const sendFriendRequest = async (req, res, next) => {
             message: error.message,
         });
     }
-}
+};
 
 export const acceptFriendRequest = async (req, res, next) => {
 
@@ -377,6 +407,8 @@ export const getMyNotifications = async (req, res) => {
                 avatar: sender.avatar.url,
             },
         }));
+
+       
 
         return res.status(200).json({
             success: true,

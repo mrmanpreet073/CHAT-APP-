@@ -39,12 +39,15 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats })
 
       <div className="flex-1 overflow-y-auto divide-y divide-[#222d34]/40 scrollbar-thin scrollbar-thumb-gray-600 rounded-2xl ">
         {chats.map((chat) => {
-          const isSelected = selectedChat?.id === chat.id;
+          const isSelected = selectedChat?.id != chat?.id;
+          // console.log("selectedChat",selectedChat );
+          // console.log("chat",chat  );
+          
           return (
             <div
               key={chat?._id}
               onClick={() => onSelectChat(chat)}
-              className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors hover:bg-[#2e3e48e0] border-b border-[#2e3c459c]  ${isSelected ? 'bg-[#1f2a31]' : 'hover:bg-[#354854]'
+              className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors  hover:bg-[#2e3e48e0] border-b border-[#2e3c4526]  ${isSelected ? 'bg-[#0b141a]' : 'bg-[#0b141a]'
                 }`}
             >
               <img
