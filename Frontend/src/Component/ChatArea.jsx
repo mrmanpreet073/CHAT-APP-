@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members }) {
+export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members,setUnreadMessages }) {
 
   const socket = getSocket();
 
@@ -148,6 +148,22 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
     }
   };
 
+  const handleChatClick = async (chat) => {
+    try {
+        await api.post(`/chat/clearNotification/${chat._id}`);
+
+        setUnreadMessages(prev => {
+            const updated = { ...prev };
+            delete updated[chatId];
+            return updated;
+        });
+
+        // open chat...
+    } catch (error) {
+        console.log(error.response);
+    }
+};
+
   // -----------------------------------
   // CHAT CHANGE
   // -----------------------------------
@@ -157,6 +173,9 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
     setPage(1);
     setHasMore(true);
     getMessages(chatId, 1);
+
+    handleChatClick(chat);
+
   }, [chatId]);
 
   // -----------------------------------

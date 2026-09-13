@@ -4,7 +4,9 @@ import { Message } from "../Models/message.js";
 import { User } from "../Models/user.js";
 import { uploadFilesToCloudinary } from "../Utils/cloudinary.js";
 import { io, userSocketIDs } from "../index.js";
-import { NEW_MESSAGE } from "../Utils/events.js";
+import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "../Utils/events.js";
+import { Notification } from "../Models/Notification.js";
+import { log } from "console";
 
 export const newGroupChat = async (req, res) => {
 
@@ -777,3 +779,59 @@ export const getChatId = async (req, res) => {
         });
     }
 };
+
+export const getUnreadNotificationa = async (req, res) => {
+    try {
+        const notification = await Notification.findOne({
+            user: req.user._id,
+        });
+
+        console.log("user", req.user._id);
+
+
+        return res.status(200).json({
+            success: true,
+            unreadMessages: notification?.unreadMessages || {},
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+
+    }
+};
+
+export const markAsRead = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        await Notification.findOneAndUpdate(
+            { user: req.user._id },
+            {
+                $unset: {
+                    [`unreadMessages.${userId}`]: 1,
+                },
+            }
+        );
+
+        io.to(userSocketIDs.get(req.user._id.toString())).emit(
+            "NOTIFICATION_READ",
+            { userId }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Notifications cleared",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+        console.log(error);
+
+    }
+};
+

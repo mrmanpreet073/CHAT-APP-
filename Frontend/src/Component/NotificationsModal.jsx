@@ -21,9 +21,9 @@ export default function NotificationsModal({ isOpen, onClose, onAccept, onReject
       try {
         const response = await api.post("/user/notification");
         // Accessing response array directly
-        console.log(response)
+        // console.log(response)
         setRequests(response.data.allRequests || []);
-        console.log("Reload response = ", response);
+        // console.log("Reload response = ", response);
 
         setNumber(response.data.allRequests.length)
 

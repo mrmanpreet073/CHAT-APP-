@@ -1,11 +1,20 @@
+import { getSocket } from '@/Socket.jsx';
 import api from '@/Utils/axios';
+import { NEW_MESSAGE_ALERT } from '@/Utils/events.js';
 import React, { useEffect, useState } from 'react';
 
-export default function Sidebar({ selectedChat, onSelectChat, chats, setChats }) {
+export default function Sidebar({ selectedChat, onSelectChat, chats, setChats, unreadMessages, setUnreadMessages }) {
   // const [chats, setChats] = useState([])
   const [loading, setLoading] = useState(false)
   const [requests, setRequests] = useState([])
 
+
+
+  const socket = getSocket();
+
+  // console.log("Unread Messages:", unreadMessages);
+
+  // console.log("unreadMessages[chat._id]", unreadMessages[chat._id]);
   useEffect(() => {
 
     const fetchChats = async () => {
@@ -27,6 +36,63 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats })
 
     fetchChats();
   }, [])
+
+  useEffect(() => {
+    const handleMessageAlert = ({ userId }) => {
+      setUnreadMessages((prev) => ({
+        ...prev,
+        [userId]: (prev[userId] || 0) + 1
+      }));
+
+
+      // console.log("Unread Message", unreadMessages);
+
+    };
+
+    socket.on(NEW_MESSAGE_ALERT, handleMessageAlert);
+
+    return () => {
+      socket.off(NEW_MESSAGE_ALERT, handleMessageAlert);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    const handleNotificationRead = ({ userId }) => {
+      setUnreadMessages((prev) => {
+        const updated = { ...prev };
+        delete updated[userId];
+        return updated;
+      });
+    };
+
+    socket.on("NOTIFICATION_READ", handleNotificationRead);
+
+    return () => {
+      socket.off("NOTIFICATION_READ", handleNotificationRead);
+    };
+  }, [socket]);
+
+  useEffect(() => {
+
+    const sendNotification = async () => {
+      try {
+        const response = await api.get("/chat/UnreadNotifications");
+        console.log("Notification response", response);
+
+        if (response.data.success) {
+          setUnreadMessages(response.data.unreadMessages);
+        }
+      }
+      catch (error) {
+        console.log(error.response);
+      }
+    }
+
+    sendNotification();
+  }, [])
+
+
+
   return (
     <div className="flex flex-col h-full bg-[#111b21] md:border-r border-[#304946]">
       <div className="p-3 border-b border-[#222d34]">
@@ -42,7 +108,7 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats })
           const isSelected = selectedChat?.id != chat?.id;
           // console.log("selectedChat",selectedChat );
           // console.log("chat",chat  );
-          
+
           return (
             <div
               key={chat?._id}
@@ -59,6 +125,13 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats })
                 <h3 className="text-sm font-medium text-[#e9edef] truncate">{chat.name}</h3>
                 <p className="text-xs text-[#8696a0] truncate">{chat.bio}</p>
               </div>
+
+              {unreadMessages[chat._id] > 0 && (
+                <span className="bg-green-500 text-white rounded-full px-2 py-1 text-xs">
+                  {unreadMessages[chat._id]}
+                </span>
+              )}
+
             </div>
           );
         })}

@@ -15,7 +15,8 @@ import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from './Utils/events.js';
 import { Message } from './Models/message.js';
 import { getSockets } from './Utils/helper.js';
 import { authenticateSocket } from './Middleware/authenticateSocket.js';
-import { log } from 'console';
+import { Notification } from './Models/Notification.js';
+import { Chat } from './Models/chat.js';
 
 
 const app = express();
@@ -93,19 +94,36 @@ io.on("connection", (socket) => {
                 createdAt: newMessage.createdAt,
             };
 
+
+
             const membersSocket = getSockets(members);
+
+            const chat = await Chat.findById(chatId);
+
+            const receiverId = chat.members.find(
+                memberId => memberId.toString() !== socket.user._id.toString()
+            );
+
+            await Notification.findOneAndUpdate(
+                { user: receiverId },
+                {
+                    $inc: {
+                        [`unreadMessages.${user._id}`]: 1,
+                    },
+                },
+                {
+                    upsert: true,
+                    returnDocument: "after",
+                }
+            );
 
             // console.log("EMITTING NEW_MESSAGE TO:", membersSocket);
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
             });
-
-            // io.to(socket.id).emit("TEST_MESSAGE", {
-            //     message: "Hello from server",
-            // });
             io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
-                chatId,
+                userId: user._id,
             });
 
         } catch (error) {

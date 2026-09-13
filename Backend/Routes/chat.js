@@ -13,6 +13,8 @@ router.post('/addMembers', addMemberValidator, validate, authenticate, controlle
 router.post('/removeMember', removeMemberValidator, validate, authenticate, controller.removeMember);
 router.post('/leaveGroup/:id', authenticate, controller.leaveGroup);
 router.post('/message', attachmentUpload,sendAttachmentsValidator, validate, authenticate , controller.sendAttachments);
+router.get('/UnreadNotifications', authenticate , controller.getUnreadNotificationa);
+router.post('/clearNotification/:userId', authenticate , controller.markAsRead);
 router.post('/getChatId/:userId', authenticate, controller.getChatId);
 
 router.route("/:id")

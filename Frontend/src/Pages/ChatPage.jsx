@@ -20,6 +20,7 @@ export default function ChatPage() {
   const [members, setMembers] = useState([]);
 
   const [number, setNumber] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState({});
 
 
 
@@ -48,42 +49,6 @@ export default function ChatPage() {
       getChatId(selectedChat._id);
     }
   }, [selectedChat]);
-
-  // Mock Users Data
-  // const chats = [
-  //   { id: 1, name: 'John Doe', username: '@johndoe', bio: 'Coding & Coffee ☕', joined: '4 months ago', avatar: 'https://i.pravatar.cc/150?img=11' },
-  //   { id: 2, name: 'John Boi', username: '@johnboi', bio: 'Building awesome apps', joined: '2 months ago', avatar: 'https://i.pravatar.cc/150?img=12' },
-  // ];
-
-  // const [requests, setRequests] = useState([
-  //   {
-  //     _id: "req1",
-  //     sender: {
-  //       name: "John Boi",
-  //       userName: "johnboi",
-  //       avatar: { url: "https://i.pravatar.cc/150?img=12" }
-  //     }
-  //   },
-  //   {
-  //     _id: "req2",
-  //     sender: {
-  //       name: "Alice Smith",
-  //       userName: "alicesmith",
-  //       avatar: { url: null } // Tests initial fallback
-  //     }
-  //   }])
-
-  // const chatDetail = async () => {
-  //   // Get chat details and also extrat members of the chat for sending to emit msg
-  //   try {
-  //     const response = api.get(`api/chat/${chatId}`)
-  //     console.log("Chat Detail Response" );
-
-  //   } catch (error) {
-  //     console.log(error.response);
-  //     // toast.error(error.message)
-  //   }
-  // }
 
 
   const handleAcceptRequest = async (requestId) => {
@@ -134,6 +99,7 @@ export default function ChatPage() {
 
   return (
     <div className="  flex flex-col h-screen bg-[#111b21] text-[#e9edef] overflow-hidden font-sans">
+     
       {/* Top Navbar */}
       <Navbar
         onSearchClick={() => setIsSearchOpen(true)}
@@ -153,6 +119,8 @@ export default function ChatPage() {
             setChats={setChats}
             selectedChat={selectedChat}
             onSelectChat={(chat) => setSelectedChat(chat)}
+            setUnreadMessages={setUnreadMessages}
+            unreadMessages={unreadMessages}
           />
         </div>
 
@@ -165,6 +133,7 @@ export default function ChatPage() {
             onToggleProfile={() => setShowProfile(!showProfile)}
             chatId={chatId}
             members={members}
+            setUnreadMessages={setUnreadMessages}
           />
         </div>
 
