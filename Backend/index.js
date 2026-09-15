@@ -75,6 +75,7 @@ io.on("connection", (socket) => {
 
     socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
         try {
+            // 1. Save message
             const messageForDB = {
                 content: message,
                 sender: user._id,
@@ -83,6 +84,7 @@ io.on("connection", (socket) => {
 
             const newMessage = await Message.create(messageForDB);
 
+            // 2. Prepare real-time message
             const messageForRealTime = {
                 _id: newMessage._id,
                 content: newMessage.content,
@@ -94,43 +96,86 @@ io.on("connection", (socket) => {
                 createdAt: newMessage.createdAt,
             };
 
+            // 3. Get chat
+            const chat = await Chat.findById(chatId);
+            // console.log("CHAT:", chat);
+            // console.log("GROUP CHAT:", chat.groupChat);
+            // console.log("MEMBERS:", chat.members);
+            // console.log("SENDER:", socket.user._id);
 
+            // 4. ADD THE GROUP/1-TO-1 NOTIFICATION CODE HERE
 
             const membersSocket = getSockets(members);
 
-            const chat = await Chat.findById(chatId);
 
-            const receiverId = chat.members.find(
-                memberId => memberId.toString() !== socket.user._id.toString()
-            );
+            if (chat.groupChat) {
+                // Group notification
+                for (const memberId of chat.members) {
+                    if (memberId.toString() === socket.user._id.toString()) {
+                        continue;
+                    }
 
-            await Notification.findOneAndUpdate(
-                { user: receiverId },
-                {
-                    $inc: {
-                        [`unreadMessages.${user._id}`]: 1,
-                    },
-                },
-                {
-                    upsert: true,
-                    returnDocument: "after",
+                    await Notification.findOneAndUpdate(
+                        { user: memberId },
+                        {
+                            $inc: {
+                                [`unreadMessages.${chatId}`]: 1,
+                            },
+                        },
+                        {
+                            upsert: true,
+                            returnDocument: "after",
+                        }
+                    );
                 }
-            );
 
-            // console.log("EMITTING NEW_MESSAGE TO:", membersSocket);
+                // Group realtime notification
+                io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
+                    chatId,
+                });
+
+            } else {
+                // Your existing 1-to-1 notification
+                const receiverId = chat.members.find(
+                    memberId =>
+                        memberId.toString() !== socket.user._id.toString()
+                );
+
+                await Notification.findOneAndUpdate(
+                    { user: receiverId },
+                    {
+                        $inc: {
+                            [`unreadMessages.${user._id}`]: 1,
+                        },
+                    },
+                    {
+                        upsert: true,
+                        returnDocument: "after",
+                    }
+                );
+
+                // Your existing 1-to-1 realtime notification
+                io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
+                    userId: user._id,
+                });
+            }
+
+            // 5. Send message to members
+
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
             });
-            io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
-                userId: user._id,
-            });
+
+            // 6. Your existing alert
+            // io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
+            //     userId: user._id,
+            // });
 
         } catch (error) {
             console.error("Message error:", error);
         }
     });
-
 });
 
 async function main() {

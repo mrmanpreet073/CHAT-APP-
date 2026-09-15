@@ -6,20 +6,24 @@ import { HelmetProvider } from 'react-helmet-async'
 import { BrowserRouter } from "react-router-dom"
 import "./index.css";
 import { Toaster } from 'sonner'
-import { store } from './Redux/store.js'
-import {Provider} from "react-redux"
+import { persistor, store } from './Redux/store.js'
+import { Provider } from "react-redux"
+import { PersistGate } from 'redux-persist/integration/react'
 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-   <Provider store={store}>
-     <BrowserRouter>
-      <HelmetProvider>
-        <CssBaseline />
-        <App />
-        <Toaster duration={4000} position="bottom-right" richColors />
-      </HelmetProvider>
-    </BrowserRouter>
-   </Provider>
+    <Provider store={store}>
+      <BrowserRouter>
+        <HelmetProvider>
+          <CssBaseline />
+          <PersistGate loading={null} persistor={persistor}>
+            <App />
+
+          </PersistGate>
+          <Toaster duration={4000} position="bottom-right" richColors />
+        </HelmetProvider>
+      </BrowserRouter>
+    </Provider>
   </StrictMode>,
 )

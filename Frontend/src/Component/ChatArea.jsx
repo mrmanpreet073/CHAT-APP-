@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members,setUnreadMessages }) {
+export default function ChatArea({ chat, onBack, onToggleProfile, chatId, members, setUnreadMessages }) {
 
   const socket = getSocket();
 
@@ -71,7 +71,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
     const handleNewMessage = ({ chatId, message }) => {
 
-      console.log("Message Received:", message);
+      // console.log("Message Received:", message);
 
       // This message is NEW,
       // so after rendering we want to go bottom.
@@ -150,19 +150,19 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
   const handleChatClick = async (chat) => {
     try {
-        await api.post(`/chat/clearNotification/${chat._id}`);
+      await api.post(`/chat/clearNotification/${chat._id}`);
 
-        setUnreadMessages(prev => {
-            const updated = { ...prev };
-            delete updated[chatId];
-            return updated;
-        });
+      setUnreadMessages(prev => {
+        const updated = { ...prev };
+        delete updated[chatId];
+        return updated;
+      });
 
-        // open chat...
+      // open chat...
     } catch (error) {
-        console.log(error.response);
+      console.log(error.response);
     }
-};
+  };
 
   // -----------------------------------
   // CHAT CHANGE
@@ -269,7 +269,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
     setSelectedFiles(files);
     setShowAttachments(false);
 
-    console.log("Selected files:", files);
+    // console.log("Selected files:", files);
 
     sendAttachment(files)
 
@@ -287,10 +287,10 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
       files.forEach((file) => {
         formData.append("files", file);
       });
-      console.log("form Data = ", formData);
+      // console.log("form Data = ", formData);
 
       const response = await api.post("/chat/message", formData)
-      console.log(response);
+      // console.log(response);
 
       if (response.data.success) {
         toast.success("Attchment Sent Successfully ✅")
@@ -401,14 +401,14 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
                     src={attachment.url}
                     alt="Attachment"
                     className=" h-55 rounded-lg"
-                    onClick={()=>setSelectedImage(attachment.url)}
+                    onClick={() => setSelectedImage(attachment.url)}
                   />
 
                 ))}
                 {selectedImage && (
                   <div
                     className="  fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-                    
+
                   >
                     <img
                       src={selectedImage}
@@ -417,8 +417,8 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
                       onClick={(e) => e.stopPropagation()}
                     />
                     <X size={40}
-                     onClick={() => setSelectedImage(null)}
-                    className="text-gray-300 hover:text-green-600 cursor-pointer absolute top-8 right-10 "
+                      onClick={() => setSelectedImage(null)}
+                      className="text-gray-300 hover:text-green-600 cursor-pointer absolute top-8 right-10 "
                     />
                   </div>
                 )}

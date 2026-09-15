@@ -24,34 +24,37 @@ const Login = () => {
     } = useForm();
 
     const onSubmit = async (data) => {
-        console.log(data);
+        // console.log(data);
 
         try {
-        const response = await api.post("/user/login",
-            {
-                userName: data.userName,
-                password: data.password,
+            const response = await api.post("/user/login",
+                {
+                    userName: data.userName,
+                    password: data.password,
+                }
+            );
+
+            // console.log("LOGIN RESPONSE:", response);
+            // console.log("USER FROM API:", response.data.user);
+
+            // Store access token
+            if (response.data.accessToken) {
+                localStorage.setItem("accessToken", response.data.accessToken);
             }
-        );
+            dispatch(setUser(response.data.user));
+            toast.success(response.data.message);
 
-        // Store access token
-        if(response.data.accessToken) {
-            localStorage.setItem("accessToken", response.data.accessToken);
+            // navigate("/chat");
+
+        } catch (error) {
+
+            console.error(error);
+            toast.error(
+                error.response?.data?.message ||
+                "Login failed"
+            );
         }
-        dispatch(setUser(response.data.user));
-        toast.success(response.data.message);
 
-        // navigate("/chat");
-
-    } catch (error) {
-        
-        console.error(error);
-        toast.error(
-            error.response?.data?.message ||
-            "Login failed"
-        );
-    }
-        
     };
 
     return (

@@ -43,7 +43,7 @@ export default function NotificationsModal({ isOpen, onClose, onAccept, onReject
 
   useEffect(() => {
     const handleNotification = (data) => {
-      console.log("Notification Received:", data);
+      // console.log("Notification Received:", data);
 
       setRequests((prev) => {
         const updatedRequests = [...prev, data.request];

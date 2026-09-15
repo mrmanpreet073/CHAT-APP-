@@ -77,7 +77,7 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats, u
     const sendNotification = async () => {
       try {
         const response = await api.get("/chat/UnreadNotifications");
-        console.log("Notification response", response);
+        // console.log("Notification response", response);
 
         if (response.data.success) {
           setUnreadMessages(response.data.unreadMessages);

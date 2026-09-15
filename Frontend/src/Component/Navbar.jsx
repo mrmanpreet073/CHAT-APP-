@@ -1,7 +1,11 @@
 import React from 'react';
 import { MessageSquareCode, Search, Plus, Users, Bell, LogOut, MessageSquare, Dot } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function Navbar({ onSearchClick, onNotificationClick, number, setNumber }) {
+export default function Navbar({ onSearchClick, onNotificationClick, number, setNumber, showCreateGroup, setShowCreateGroup }) {
+
+  const navigate = useNavigate()
+
   return (
     <header className="h-[60px] bg-[#202c33] px-4 flex items-center justify-between border-b border-[#304946] shrink-0">
 
@@ -20,11 +24,14 @@ export default function Navbar({ onSearchClick, onNotificationClick, number, set
         <button onClick={onSearchClick} className="hover:text-[#00a884] transition-colors" title="Search People">
           <Search size={20} />
         </button>
-        <button className="hover:text-[#00a884] transition-colors" title="New Chat">
+        <button onClick={() => setShowCreateGroup(true)}
+
+          className="hover:text-[#00a884] transition-colors" title="New Chat">
           <Plus size={20} />
+
         </button>
         <button className="hover:text-[#00a884] transition-colors" title="Groups">
-          <Users size={20} />
+          <Users size={20} onClick={() => navigate("/groups") }/>
         </button>
         <button onClick={onNotificationClick} className="relative hover:text-[#00a884] transition-colors" title="Notifications">
           <div  >
@@ -32,7 +39,7 @@ export default function Navbar({ onSearchClick, onNotificationClick, number, set
 
             {/* Notification Badge / Dot */}
 
-            <span className={`${number === 0 ? "hidden":"  absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#00a884] text-[10px] font-bold text-[#111b21]" }`}>
+            <span className={`${number === 0 ? "hidden" : "  absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#00a884] text-[10px] font-bold text-[#111b21]"}`}>
               {number === 0 ? <p className='hidden'>{0}</p> : number}
             </span>
           </div>

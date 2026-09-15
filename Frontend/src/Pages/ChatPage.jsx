@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import NotificationsModal from '@/Component/NotificationsModal.jsx';
 import api from '@/Utils/axios.js';
 import { getSocket } from '@/Socket.jsx';
+import CreateGroup from '@/Component/CreateGroup.jsx';
 
 export default function ChatPage() {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -21,6 +22,12 @@ export default function ChatPage() {
 
   const [number, setNumber] = useState(0)
   const [unreadMessages, setUnreadMessages] = useState({});
+
+  // group Dialoag 
+
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [selectedMembers, setSelectedMembers] = useState([]);
 
 
 
@@ -99,15 +106,17 @@ export default function ChatPage() {
 
   return (
     <div className="  flex flex-col h-screen bg-[#111b21] text-[#e9edef] overflow-hidden font-sans">
-     
+
       {/* Top Navbar */}
       <Navbar
         onSearchClick={() => setIsSearchOpen(true)}
         onNotificationClick={() => setIsNotificationOpen(true)}
         number={number}
         setNumber={setNumber}
-        
-        />
+        setShowCreateGroup={setShowCreateGroup}
+        showCreateGroup={showCreateGroup}
+
+      />
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden relative">
@@ -160,8 +169,14 @@ export default function ChatPage() {
         onClose={() => setIsNotificationOpen(false)}
         onAccept={handleAcceptRequest}
         onReject={handleRejectRequest}
-         number={number}
+        number={number}
         setNumber={setNumber}
+      />
+      <CreateGroup
+        open={showCreateGroup}
+        // onClose={() => setShowCreateGroup(false)}
+        setShowCreateGroup={setShowCreateGroup}
+        showCreateGroup={showCreateGroup}
       />
     </div>
   );

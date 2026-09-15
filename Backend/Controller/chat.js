@@ -70,13 +70,15 @@ export const getMyGroups = async (req, res) => {
         const chats = await Chat.find({
             members: req.user._id,
             groupChat: true,
-            creator: req.user._id,
+            // creator: req.user._id,
         }).populate("members", "name avatar");
 
-        const groups = chats.map(({ members, _id, groupChat, name }) => ({
+        const groups = chats.map(({ members, _id, groupChat, name ,creator}) => ({
             _id,
             groupChat,
+            members,
             name,
+            creator,
             avatar: members.slice(0, 3).map(({ avatar }) => avatar?.url),
         }));
 
