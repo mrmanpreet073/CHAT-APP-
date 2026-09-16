@@ -64,7 +64,7 @@ io.on("connection", (socket) => {
     const user = socket.user;
 
     userSocketIDs.set(user._id.toString(), socket.id);
-    // console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
+    console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
 
     socket.on("disconnect", () => {
         console.log("USER DISCONNECTED:", user._id.toString(), "SOCKET:", socket.id);
@@ -98,10 +98,7 @@ io.on("connection", (socket) => {
 
             // 3. Get chat
             const chat = await Chat.findById(chatId);
-            // console.log("CHAT:", chat);
-            // console.log("GROUP CHAT:", chat.groupChat);
-            // console.log("MEMBERS:", chat.members);
-            // console.log("SENDER:", socket.user._id);
+          
 
             // 4. ADD THE GROUP/1-TO-1 NOTIFICATION CODE HERE
 

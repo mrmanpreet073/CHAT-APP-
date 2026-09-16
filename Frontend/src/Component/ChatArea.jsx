@@ -16,6 +16,9 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
   const socket = getSocket();
 
+  console.log("cht=", chat);
+
+
   const [messages, setMessages] = useState([]);
 
   const [page, setPage] = useState(1);
@@ -69,18 +72,12 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
   // -----------------------------------
   useEffect(() => {
 
-    const handleNewMessage = ({ chatId, message }) => {
+    const handleNewMessage = ({ chatId: incomingChatId, message }) => {
+      if (incomingChatId.toString() !== chatId.toString()) return;
 
-      // console.log("Message Received:", message);
-
-      // This message is NEW,
-      // so after rendering we want to go bottom.
       shouldScrollToBottom.current = true;
+      setMessages((prev) => [...prev, message]);
 
-      setMessages((prev) => [
-        ...prev,
-        message
-      ]);
     };
 
     socket.on(NEW_MESSAGE, handleNewMessage);
@@ -89,7 +86,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
       socket.off(NEW_MESSAGE, handleNewMessage);
     };
 
-  }, [socket]);
+  }, [socket, chatId]);
   // -----------------------------------
   // HANDLE SCROLL
   // -----------------------------------
@@ -362,8 +359,12 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
         {messages.map((msg) => {
 
+          console.log(msg);
+          console.log("msg.sender._id", msg.sender._id);
+          console.log("chat._id", chat._id);
+
           const isMyMessage =
-            msg.sender._id != chat._id;
+            msg.sender._id.toString() !== chat._id.toString()
 
 
           return (

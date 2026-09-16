@@ -42,6 +42,10 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
         }));
     };
 
+    const handleLeaveGroup = () => {
+        // console.log("Leave Group");
+    }
+
     return (
         <div className="absolute inset-y-0 right-0 z-30 flex w-full max-w-[380px] flex-col border-l border-[#2a3942] bg-[#111b21] shadow-2xl">
 

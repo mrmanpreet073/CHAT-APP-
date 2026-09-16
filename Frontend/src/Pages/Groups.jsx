@@ -14,6 +14,7 @@ import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "@/Utils/events";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import GroupDetails from "@/Component/GroupDetails";
+import Navbar from "@/Component/Navbar";
 
 const sampleGroups = [
   {
@@ -541,227 +542,231 @@ export default function Groups() {
 
 
   return (
-    <div className="relative flex h-screen w-full overflow-hidden bg-[#111b21] text-white">
 
-      {/* GROUP LIST */}
+    <>
 
-      <div
-        className={`h-full w-full shrink-0 border-r border-[#2a3942] md:w-[350px] ${selectedGroup ? "hidden md:block" : "block"
-          }`}
-      >
-        <div className="flex h-[72px] items-center justify-between bg-[#202c33] px-5">
-          <div>
-            <ArrowLeft onClick={() => navigate("/ChatPage")} />
+      <div className="relative flex h-screen w-full overflow-hidden bg-[#111b21] text-white">
+
+        {/* GROUP LIST */}
+
+        <div
+          className={`h-full w-full shrink-0 border-r border-[#2a3942] md:w-[350px] ${selectedGroup ? "hidden md:block" : "block"
+            }`}
+        >
+          <div className="flex h-[72px] items-center justify-between bg-[#202c33] px-5">
+            <div>
+              <ArrowLeft onClick={() => navigate("/ChatPage")} />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold">
+                Groups
+              </h1>
+
+              <p className="text-sm text-gray-400">
+                {groups.length} groups
+              </p>
+            </div>
+
+            <Users
+              size={24}
+              className="text-gray-400"
+            />
           </div>
-          <div>
-            <h1 className="text-xl font-semibold">
-              Groups
-            </h1>
 
-            <p className="text-sm text-gray-400">
-              {groups.length} groups
-            </p>
-          </div>
-
-          <Users
-            size={24}
-            className="text-gray-400"
-          />
-        </div>
-
-        <div className="h-[calc(100%-72px)] overflow-y-auto">
-          {groups.map((group) => (
-            <button
-              key={group._id}
-              onClick={() => handleGroupClick(group)}
-              className={`flex w-full items-center gap-3 border-b border-[#202c33] px-4 py-3 text-left hover:bg-[#202c33] ${selectedGroup?._id === group._id
-                ? "bg-[#2a3942]"
-                : ""
-                }`}
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#2a3942]">
-                <Users size={22} className="text-gray-400" />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="truncate font-medium">
-                    {group.name}
-                  </h3>
-
-                  {unreadMessages[group._id] > 0 && (
-                    <span className="rounded-full bg-[#00a884] px-2 py-1 text-xs text-white">
-                      {unreadMessages[group._id]}
-                    </span>
-                  )}
+          <div className="h-[calc(100%-72px)] overflow-y-auto">
+            {groups.map((group) => (
+              <button
+                key={group._id}
+                onClick={() => handleGroupClick(group)}
+                className={`flex w-full items-center gap-3 border-b border-[#202c33] px-4 py-3 text-left hover:bg-[#202c33] ${selectedGroup?._id === group._id
+                  ? "bg-[#2a3942]"
+                  : ""
+                  }`}
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#2a3942]">
+                  <Users size={22} className="text-gray-400" />
                 </div>
 
-                <p className="mt-1 truncate text-sm text-gray-400">
-                  {group.members.length} members
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="truncate font-medium">
+                      {group.name}
+                    </h3>
 
-      {/* CHAT AREA */}
-
-      <div
-        className={`flex h-full min-w-0 flex-1 flex-col ${selectedGroup ? "flex" : "hidden md:flex"
-          }`}
-      >
-        {!selectedGroup ? (
-          <div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
-            <Users
-              size={70}
-              className="mb-5 opacity-30"
-            />
-
-            <h2 className="text-2xl text-gray-400">
-              Select a group
-            </h2>
-
-            <p className="mt-2 text-sm">
-              Choose a group to start chatting
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* CHAT HEADER */}
-
-            <div className="flex h-[72px] shrink-0 items-center gap-3 border-b border-[#2a3942] bg-[#202c33] px-4">
-
-              <button
-                onClick={() => setSelectedGroup(null)}
-                className="md:hidden"
-              >
-                <ArrowLeft size={22} />
-              </button>
-
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2a3942]">
-                <Users
-                  size={20}
-                  className="text-gray-400"
-                />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate font-medium">
-                  {selectedGroup.name}
-                </h2>
-
-                <p className="text-xs text-gray-400">
-                  {selectedGroup.members.length} members
-                </p>
-              </div>
-
-              {/* GROUP DETAILS */}
-
-              <button
-                onClick={() => setShowDetails(true)}
-                className="rounded-full p-2 text-gray-400 hover:bg-[#2a3942] hover:text-white"
-                title="Group details"
-              >
-                <MoreVertical size={21} />
-              </button>
-            </div>
-
-            {/* MESSAGES */}
-
-            <div
-              className="min-h-0 flex-1 overflow-y-auto bg-[#0b141a] p-4"
-              ref={messagesContainerRef}
-              onScroll={handleScroll}
-            >
-              <div className="mx-auto max-w-4xl space-y-2">
-
-                {/* Loading older messages */}
-                {loading && page > 1 && (
-                  <div className="flex justify-center py-2">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-400 border-t-[#00a884]" />
+                    {unreadMessages[group._id] > 0 && (
+                      <span className="rounded-full bg-[#00a884] px-2 py-1 text-xs text-white">
+                        {unreadMessages[group._id]}
+                      </span>
+                    )}
                   </div>
-                )}
 
-                {messagess.map((msg) => {
-                  const isMine = msg.sender._id === user.id;
+                  <p className="mt-1 truncate text-sm text-gray-400">
+                    {group.members.length} members
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
-                  return (
-                    <div
-                      key={msg._id}
-                      className={`flex ${isMine ? "justify-end" : "justify-start"
-                        }`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-lg px-3 py-2 ${isMine
-                          ? "bg-[#005c4b]"
-                          : "bg-[#202c33]"
-                          }`}
-                      >
-                        {!isMine && (
-                          <p className="mb-1 text-xs font-medium text-[#00a884]">
-                            {msg.sender.name}
-                          </p>
-                        )}
+        {/* CHAT AREA */}
 
-                        <p className="text-sm">
-                          {msg.content}
-                        </p>
+        <div
+          className={`flex h-full min-w-0 flex-1 flex-col ${selectedGroup ? "flex" : "hidden md:flex"
+            }`}
+        >
+          {!selectedGroup ? (
+            <div className="flex h-full flex-col items-center justify-center text-center text-gray-500">
+              <Users
+                size={70}
+                className="mb-5 opacity-30"
+              />
 
-                        <p className="mt-1 text-right text-[10px] text-gray-400">
-                          {msg.time}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+              <h2 className="text-2xl text-gray-400">
+                Select a group
+              </h2>
 
-              </div>
+              <p className="mt-2 text-sm">
+                Choose a group to start chatting
+              </p>
             </div>
-            {/* INPUT */}
+          ) : (
+            <>
+              {/* CHAT HEADER */}
 
-            <div className="shrink-0 border-t border-[#2a3942] bg-[#202c33] p-3">
-              <div className="mx-auto flex max-w-4xl items-center gap-2">
-
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) =>
-                    setMessage(e.target.value)
-                  }
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="Type a message"
-                  className="min-w-0 flex-1 rounded-lg bg-[#2a3942] px-4 py-3 text-sm text-white outline-none placeholder:text-gray-400"
-                />
+              <div className="flex h-[72px] shrink-0 items-center gap-3 border-b border-[#2a3942] bg-[#202c33] px-4">
 
                 <button
-                  onClick={handleSendMessage}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00a884] hover:bg-[#06cf9b]"
+                  onClick={() => setSelectedGroup(null)}
+                  className="md:hidden"
                 >
-                  <Send size={19} />
+                  <ArrowLeft size={22} />
                 </button>
 
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2a3942]">
+                  <Users
+                    size={20}
+                    className="text-gray-400"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate font-medium">
+                    {selectedGroup.name}
+                  </h2>
+
+                  <p className="text-xs text-gray-400">
+                    {selectedGroup.members.length} members
+                  </p>
+                </div>
+
+                {/* GROUP DETAILS */}
+
+                <button
+                  onClick={() => setShowDetails(true)}
+                  className="rounded-full p-2 text-gray-400 hover:bg-[#2a3942] hover:text-white"
+                  title="Group details"
+                >
+                  <MoreVertical size={21} />
+                </button>
               </div>
-            </div>
-          </>
-        )}
-      </div>
 
-      {/* GROUP DETAILS */}
+              {/* MESSAGES */}
 
-      {showDetails && selectedGroup && (
-        <GroupDetails
-          group={selectedGroup}
-          onClose={() => setShowDetails(false)}
+              <div
+                className="min-h-0 flex-1 overflow-y-auto bg-[#0b141a] p-4"
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+              >
+                <div className="mx-auto max-w-4xl space-y-2">
+
+                  {/* Loading older messages */}
+                  {loading && page > 1 && (
+                    <div className="flex justify-center py-2">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-400 border-t-[#00a884]" />
+                    </div>
+                  )}
+
+                  {messagess.map((msg) => {
+                    const isMine = msg.sender._id === user.id;
+
+                    return (
+                      <div
+                        key={msg._id}
+                        className={`flex ${isMine ? "justify-end" : "justify-start"
+                          }`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg px-3 py-2 ${isMine
+                            ? "bg-[#005c4b]"
+                            : "bg-[#202c33]"
+                            }`}
+                        >
+                          {!isMine && (
+                            <p className="mb-1 text-xs font-medium text-[#00a884]">
+                              {msg.sender.name}
+                            </p>
+                          )}
+
+                          <p className="text-sm">
+                            {msg.content}
+                          </p>
+
+                          <p className="mt-1 text-right text-[10px] text-gray-400">
+                            {msg.time}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                </div>
+              </div>
+              {/* INPUT */}
+
+              <div className="shrink-0 border-t border-[#2a3942] bg-[#202c33] p-3">
+                <div className="mx-auto flex max-w-4xl items-center gap-2">
+
+                  <input
+                    type="text"
+                    value={message}
+                    onChange={(e) =>
+                      setMessage(e.target.value)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Type a message"
+                    className="min-w-0 flex-1 rounded-lg bg-[#2a3942] px-4 py-3 text-sm text-white outline-none placeholder:text-gray-400"
+                  />
+
+                  <button
+                    onClick={handleSendMessage}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#00a884] hover:bg-[#06cf9b]"
+                  >
+                    <Send size={19} />
+                  </button>
+
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* GROUP DETAILS */}
+
+        {showDetails && selectedGroup && (
+          <GroupDetails
+            group={selectedGroup}
+            onClose={() => setShowDetails(false)}
           // onRemoveMember={handleRemoveMember}
           // onAddMembers={handleAddMembers}
-        />
-      )}
-    </div>
+          />
+        )}
+      </div>
+    </>
   );
 }
 

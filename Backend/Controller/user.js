@@ -289,7 +289,12 @@ export const sendFriendRequest = async (req, res, next) => {
 
         const receiverSocketId = userSocketIDs.get(userId.toString());
 
+        console.log("Receiver User ID:", userId.toString());
+        console.log("Receiver Socket ID:", receiverSocketId);
+        console.log("Socket Map:", userSocketIDs);
+
         if (receiverSocketId) {
+            console.log("Sending NOTIFICATION");
             io.to(receiverSocketId).emit("NOTIFICATION", {
                 request: {
                     _id: newRequest._id,
@@ -370,7 +375,17 @@ export const acceptFriendRequest = async (req, res, next) => {
             Chat.create({
                 members,
                 name: `${request.sender.name}-${request.receiver.name}`,
+                groupChat: false,
             }),
+
+            User.findByIdAndUpdate(request.sender._id, {
+                $addToSet: { friends: request.receiver._id },
+            }),
+
+            User.findByIdAndUpdate(request.receiver._id, {
+                $addToSet: { friends: request.sender._id },
+            }),
+
             request.deleteOne(),
         ]);
 
@@ -408,7 +423,7 @@ export const getMyNotifications = async (req, res) => {
             },
         }));
 
-       
+
 
         return res.status(200).json({
             success: true,
@@ -430,6 +445,10 @@ export const getMyFriends = async (req, res) => {
     try {
         const chatId = req.query.chatId;
 
+        // console.log("req.user._id", req.user._id);
+
+
+
         // Find all private chats of the logged-in user
         const chats = await Chat.find({
             members: req.user._id,
@@ -441,10 +460,15 @@ export const getMyFriends = async (req, res) => {
 
         // Get the other user from each private chat
         const friends = chats.map(({ members }) => {
+            // console.log("MEMBERS:", members);
+            // console.log("CURRENT USER:", req.user._id);
+
             const otherUser = getOtherMember(
                 members,
                 req.user._id
             );
+
+            // console.log("OTHER USER:", otherUser);
             // console.log("BIO:", otherUser);
             // console.log("TYPE:", typeof otherUser.bio);
 
@@ -455,6 +479,8 @@ export const getMyFriends = async (req, res) => {
                 bio: otherUser.bio || ""
             };
         });
+
+
 
         // If chatId is provided,
         // return only friends who are not already in that group

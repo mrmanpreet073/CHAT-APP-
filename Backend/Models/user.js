@@ -48,7 +48,11 @@ const schema = new mongoose.Schema(
     bio: {
       type: String,
       default: ""
-    }
+    },
+    friends: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }]
 
   },
   {

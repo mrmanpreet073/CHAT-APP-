@@ -43,11 +43,14 @@ export default function CreateGroup({ open, onClose, setShowCreateGroup, showCre
     const fetchUsers = async () => {
         try {
             const response = await api.post("user/friends")
+            console.log("response ", response);
+            
             if (response.data.success) {
                 setUsers(response.data.friends)
             }
         } catch (error) {
             console.log(error.message);
+            console.log(error.response);
         }
     }
 
