@@ -562,6 +562,9 @@ export default function Groups() {
   };
 
 
+  console.log(groups);
+  
+
 
 
   return (
@@ -598,6 +601,7 @@ export default function Groups() {
 
           <div className="h-[calc(100%-72px)] overflow-y-auto">
             {groups.map((group) => (
+              
               <button
                 key={group._id}
                 onClick={() => handleGroupClick(group)}
@@ -607,7 +611,7 @@ export default function Groups() {
                   }`}
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#2a3942]">
-                  <Users size={22} className="text-gray-400" />
+                 <img src={group.image?.url} alt="" />
                 </div>
 
                 <div className="min-w-0 flex-1">

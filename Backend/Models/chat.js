@@ -21,7 +21,17 @@ const schema = new mongoose.Schema({
             type: Types.ObjectId,
             ref: "User"
         }
-    ]
+    ],
+    image: {
+        public_id: {
+            type: String,
+            default: null,
+        },
+        url: {
+            type: String,
+            default: null,
+        },
+    }
 }, {
     timestamps: true
 });

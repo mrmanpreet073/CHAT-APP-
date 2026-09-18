@@ -62,7 +62,6 @@ const Signup = () => {
             );
 
             console.log("response", response);
-            
 
             if (response.data.success) {
                 toast.success(response.data.message);
@@ -70,7 +69,6 @@ const Signup = () => {
                     navigate("/login");
                 }, 2000);
             }
-
 
             console.log(response.data);
 
@@ -90,11 +88,11 @@ const Signup = () => {
             {/* Heading */}
             <div className="mb-6">
 
-                <h2 className="text-3xl font-bold text-[#111b21]">
+                <h2 className="text-3xl font-bold text-[#e9edef]">
                     Create account
                 </h2>
 
-                <p className="text-[#667781] mt-2">
+                <p className="text-[#8696a0] mt-2">
                     Create your account and start chatting
                 </p>
 
@@ -111,7 +109,7 @@ const Signup = () => {
 
                     <label className="relative cursor-pointer group">
 
-                        <div className="w-24 h-24 rounded-full bg-[#e7f8f1] border-2 border-[#25d366] overflow-hidden flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full bg-[#2a3942] border-2 border-[#00a884] overflow-hidden flex items-center justify-center">
 
                             {avatarPreview ? (
 
@@ -134,7 +132,7 @@ const Signup = () => {
 
 
                         {/* Camera */}
-                        <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#00a884] text-white flex items-center justify-center border-2 border-white">
+                        <div className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#00a884] text-white flex items-center justify-center border-2 border-[#202c33]">
 
                             <Camera size={15} />
 
@@ -156,7 +154,7 @@ const Signup = () => {
                 {/* Name */}
                 <div>
 
-                    <label className="block text-sm font-semibold text-[#111b21] mb-1.5">
+                    <label className="block text-sm font-semibold text-[#d1d7db] mb-1.5">
                         Full name
                     </label>
 
@@ -173,13 +171,13 @@ const Signup = () => {
                             {...register("name", {
                                 required: "Name is required",
                             })}
-                            className="w-full h-11 pl-11 pr-4 rounded-lg border border-[#d1d7db] outline-none placeholder:text-[#8696a0] focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition"
+                            className="w-full h-11 pl-11 pr-4 rounded-lg bg-[#2a3942] border border-[#374045] outline-none text-[#e9edef] placeholder:text-[#8696a0] focus:border-[#00a884] focus:ring-2 focus:ring-[#00a884]/10 transition"
                         />
 
                     </div>
 
                     {errors.name && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-400 text-xs mt-1">
                             {errors.name.message}
                         </p>
                     )}
@@ -190,7 +188,7 @@ const Signup = () => {
                 {/* Username */}
                 <div>
 
-                    <label className="block text-sm font-semibold text-[#111b21] mb-1.5">
+                    <label className="block text-sm font-semibold text-[#d1d7db] mb-1.5">
                         Username
                     </label>
 
@@ -207,13 +205,13 @@ const Signup = () => {
                             {...register("userName", {
                                 required: "Username is required",
                             })}
-                            className="w-full h-11 pl-11 pr-4 rounded-lg border border-[#d1d7db] outline-none placeholder:text-[#8696a0] focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition"
+                            className="w-full h-11 pl-11 pr-4 rounded-lg bg-[#2a3942] border border-[#374045] outline-none text-[#e9edef] placeholder:text-[#8696a0] focus:border-[#00a884] focus:ring-2 focus:ring-[#00a884]/10 transition"
                         />
 
                     </div>
 
                     {errors.userName && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-400 text-xs mt-1">
                             {errors.userName.message}
                         </p>
                     )}
@@ -224,7 +222,7 @@ const Signup = () => {
                 {/* Password */}
                 <div>
 
-                    <label className="block text-sm font-semibold text-[#111b21] mb-1.5">
+                    <label className="block text-sm font-semibold text-[#d1d7db] mb-1.5">
                         Password
                     </label>
 
@@ -246,7 +244,7 @@ const Signup = () => {
                                         "Password must be at least 6 characters",
                                 },
                             })}
-                            className="w-full h-11 pl-11 pr-12 rounded-lg border border-[#d1d7db] outline-none placeholder:text-[#8696a0] focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition"
+                            className="w-full h-11 pl-11 pr-12 rounded-lg bg-[#2a3942] border border-[#374045] outline-none text-[#e9edef] placeholder:text-[#8696a0] focus:border-[#00a884] focus:ring-2 focus:ring-[#00a884]/10 transition"
                         />
 
                         <button
@@ -254,7 +252,7 @@ const Signup = () => {
                             onClick={() =>
                                 setShowPassword(!showPassword)
                             }
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8696a0]"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8696a0] hover:text-[#00a884] transition"
                         >
                             {showPassword ? (
                                 <EyeOff size={18} />
@@ -266,7 +264,7 @@ const Signup = () => {
                     </div>
 
                     {errors.password && (
-                        <p className="text-red-500 text-xs mt-1">
+                        <p className="text-red-400 text-xs mt-1">
                             {errors.password.message}
                         </p>
                     )}
@@ -286,13 +284,13 @@ const Signup = () => {
 
 
             {/* Login */}
-            <p className="text-center text-sm text-[#667781] mt-6">
+            <p className="text-center text-sm text-[#8696a0] mt-6">
 
                 Already have an account?{" "}
 
                 <Link
                     to="/login"
-                    className="font-semibold text-[#128c7e] hover:underline"
+                    className="font-semibold text-[#00a884] hover:text-[#06cf9c] hover:underline"
                 >
                     Login
                 </Link>

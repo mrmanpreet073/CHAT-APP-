@@ -1,21 +1,21 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import api from "@/Utils/axios";
 import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/Redux/reducers/auth";
 
-
-// import { toast } from "sonner";
-// toast.success("Account created successfully!");
+import { useSelector } from "react-redux";
 
 const Login = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const dispatch = useDispatch();
+
+    const navigate = useNavigate()
 
     const {
         register,
@@ -24,7 +24,6 @@ const Login = () => {
     } = useForm();
 
     const onSubmit = async (data) => {
-        // console.log(data);
 
         try {
             const response = await api.post("/user/login",
@@ -33,18 +32,20 @@ const Login = () => {
                     password: data.password,
                 }
             );
+            if(response.data.success){
 
-            // console.log("LOGIN RESPONSE:", response);
-            // console.log("USER FROM API:", response.data.user);
+                if (response.data.accessToken) {
+                    localStorage.setItem("accessToken", response.data.accessToken);
+                }
+    
+                dispatch(setUser(response.data.user));
+                toast.success(response.data.message);
+                 setTimeout(() => {
+                    navigate("/ChatPage");
+                }, 1500);
 
-            // Store access token
-            if (response.data.accessToken) {
-                localStorage.setItem("accessToken", response.data.accessToken);
             }
-            dispatch(setUser(response.data.user));
-            toast.success(response.data.message);
 
-            // navigate("/chat");
 
         } catch (error) {
 
@@ -63,12 +64,12 @@ const Login = () => {
             {/* Heading */}
             <div className="mb-8">
 
-                <h2 className="text-3xl font-bold text-[#111b21]">
-                    Login
+                <h2 className="text-3xl font-bold text-white">
+                    Welcome Back
                 </h2>
 
-                <p className="text-[#667781] mt-2">
-                    Enter your credentials to access your account
+                <p className="text-[#8696a0] mt-2">
+                    Login to continue chatting with your friends
                 </p>
 
             </div>
@@ -82,7 +83,7 @@ const Login = () => {
                 {/* Username */}
                 <div>
 
-                    <label className="block text-sm font-semibold text-[#111b21] mb-2">
+                    <label className="block text-sm font-semibold text-[#d1d7db] mb-2">
                         Username
                     </label>
 
@@ -99,13 +100,13 @@ const Login = () => {
                             {...register("userName", {
                                 required: "Username is required",
                             })}
-                            className="w-full h-12 pl-11 pr-4 rounded-lg border border-[#d1d7db] outline-none text-[#111b21] placeholder:text-[#8696a0] focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition"
+                            className="w-full h-12 pl-11 pr-4 rounded-lg bg-[#202c33] border border-[#374045] outline-none text-[#e9edef] placeholder:text-[#8696a0] focus:border-[#00a884] focus:ring-2 focus:ring-[#00a884]/10 transition"
                         />
 
                     </div>
 
                     {errors.userName && (
-                        <p className="text-red-500 text-xs mt-1.5">
+                        <p className="text-red-400 text-xs mt-1.5">
                             {errors.userName.message}
                         </p>
                     )}
@@ -116,7 +117,7 @@ const Login = () => {
                 {/* Password */}
                 <div>
 
-                    <label className="block text-sm font-semibold text-[#111b21] mb-2">
+                    <label className="block text-sm font-semibold text-[#d1d7db] mb-2">
                         Password
                     </label>
 
@@ -133,7 +134,7 @@ const Login = () => {
                             {...register("password", {
                                 required: "Password is required",
                             })}
-                            className="w-full h-12 pl-11 pr-12 rounded-lg border border-[#d1d7db] outline-none text-[#111b21] placeholder:text-[#8696a0] focus:border-[#25d366] focus:ring-2 focus:ring-[#25d366]/10 transition"
+                            className="w-full h-12 pl-11 pr-12 rounded-lg bg-[#202c33] border border-[#374045] outline-none text-[#e9edef] placeholder:text-[#8696a0] focus:border-[#00a884] focus:ring-2 focus:ring-[#00a884]/10 transition"
                         />
 
                         <button
@@ -141,7 +142,7 @@ const Login = () => {
                             onClick={() =>
                                 setShowPassword(!showPassword)
                             }
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8696a0] hover:text-[#128c7e]"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8696a0] hover:text-[#00a884] transition"
                         >
                             {showPassword ? (
                                 <EyeOff size={19} />
@@ -153,7 +154,7 @@ const Login = () => {
                     </div>
 
                     {errors.password && (
-                        <p className="text-red-500 text-xs mt-1.5">
+                        <p className="text-red-400 text-xs mt-1.5">
                             {errors.password.message}
                         </p>
                     )}
@@ -166,7 +167,7 @@ const Login = () => {
 
                     <button
                         type="button"
-                        className="text-sm font-medium text-[#128c7e] hover:underline"
+                        className="text-sm font-medium text-[#00a884] hover:text-[#06cf9c] hover:underline"
                     >
                         Forgot password?
                     </button>
@@ -186,13 +187,13 @@ const Login = () => {
 
 
             {/* Signup */}
-            <p className="text-center text-sm text-[#667781] mt-8">
+            <p className="text-center text-sm text-[#8696a0] mt-8">
 
                 Don't have an account?{" "}
 
                 <Link
                     to="/signup"
-                    className="font-semibold text-[#128c7e] hover:underline"
+                    className="font-semibold text-[#00a884] hover:text-[#06cf9c] hover:underline"
                 >
                     Sign up
                 </Link>

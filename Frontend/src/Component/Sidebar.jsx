@@ -95,13 +95,13 @@ export default function Sidebar({ selectedChat, onSelectChat, chats, setChats, u
 
   return (
     <div className="flex flex-col h-full bg-[#111b21] md:border-r border-[#304946]">
-      <div className="p-3 border-b border-[#222d34]">
+      {/* <div className="p-3 border-b border-[#222d34]">
         <input
           type="text"
           placeholder="Search chats..."
           className="w-full bg-[#202c33] text-sm text-[#e9edef] placeholder-[#8696a0] px-4 py-2 rounded-lg outline-none border border-transparent focus:border-[#00a884]"
         />
-      </div>
+      </div> */}
 
       <div className="flex-1 overflow-y-auto divide-y divide-[#222d34]/40 scrollbar-thin scrollbar-thumb-gray-600 rounded-2xl ">
         {chats.map((chat) => {

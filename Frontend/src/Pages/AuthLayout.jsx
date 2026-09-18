@@ -2,9 +2,9 @@ import { MessageCircle, ShieldCheck, Zap, Users } from "lucide-react";
 
 const AuthLayout = ({ children, type }) => {
     return (
-        <div className="min-h-screen bg-[#f5f7f6] flex items-center justify-center p-4 md:p-6">
+        <div className="min-h-screen bg-[#111b21] flex items-center justify-center p-4 md:p-6">
 
-            <div className="w-full max-w-6xl min-h-[680px] bg-white rounded-2xl overflow-hidden shadow-xl flex">
+            <div className="w-full max-w-6xl min-h-[680px] bg-[#202c33] rounded-2xl overflow-hidden shadow-2xl flex">
 
                 {/* LEFT SIDE */}
                 <div className="hidden md:flex md:w-1/2 relative overflow-hidden bg-[#075e54] text-white">
@@ -115,7 +115,7 @@ const AuthLayout = ({ children, type }) => {
 
 
                 {/* RIGHT SIDE */}
-                <div className="w-full md:w-1/2 flex items-center justify-center px-6 py-10 sm:px-12 lg:px-16">
+                <div className="w-full md:w-1/2 flex items-center justify-center bg-[#202c33] px-6 py-10 sm:px-12 lg:px-16">
 
                     <div className="w-full max-w-md">
                         {children}

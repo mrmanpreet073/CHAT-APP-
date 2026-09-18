@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Chat } from "../Models/chat.js";
 import { Message } from "../Models/message.js";
 import { User } from "../Models/user.js";
-import { uploadFilesToCloudinary } from "../Utils/cloudinary.js";
+import { uploadFilesToCloudinary, uploadToCloudinary } from "../Utils/cloudinary.js";
 import { io, userSocketIDs } from "../index.js";
 import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "../Utils/events.js";
 import { Notification } from "../Models/Notification.js";
@@ -10,31 +10,46 @@ import { log } from "console";
 import { getSockets } from "../Utils/helper.js";
 
 export const newGroupChat = async (req, res) => {
-
     try {
         const { name, members } = req.body;
+        if (!name?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Group name is required"
+            });
+        }
 
-        if (members.length < 2) {
+        if (!members || members.length < 2) {
             return res.status(400).json({
                 success: false,
                 message: "Must have at least 3 members"
             });
         }
 
-        const allMembers = [...members, req.user._id]
+        let image = {
+            public_id: null,
+            url: null,
+        };
+
+        if (req.file) {
+            image = await uploadToCloudinary(req.file.buffer);
+        }
+
+        const allMembers = [...members, req.user._id];
 
         const groupChat = await Chat.create({
             name,
+            image,
             groupChat: true,
             members: allMembers,
             creator: req.user._id
-        })
+        });
 
         return res.status(201).json({
             success: true,
             message: "Group Chat Created",
             groupChat
-        })
+        });
 
     } catch (error) {
         return res.status(500).json({
@@ -42,7 +57,6 @@ export const newGroupChat = async (req, res) => {
             message: error.message
         });
     }
-
 };
 
 export const getMyChats = async (req, res) => {
@@ -74,13 +88,13 @@ export const getMyGroups = async (req, res) => {
             // creator: req.user._id,
         }).populate("members", "name avatar");
 
-        const groups = chats.map(({ members, _id, groupChat, name, creator }) => ({
+        const groups = chats.map(({ members, _id, groupChat, name, creator, image }) => ({
             _id,
             groupChat,
             members,
             name,
             creator,
-            avatar: members.slice(0, 3).map(({ avatar }) => avatar?.url),
+            image,
         }));
 
         return res.status(200).json({
@@ -450,8 +464,8 @@ export const leaveGroup = async (req, res) => {
 
         const membersSocket = getSockets(remainingMembers);
 
-        console.log("remainingMembers ", remainingMembers);
-        console.log("member socket ", membersSocket);
+        // console.log("remainingMembers ", remainingMembers);
+        // console.log("member socket ", membersSocket);
 
 
         io.to(membersSocket).emit(NEW_MESSAGE, {
@@ -853,7 +867,7 @@ export const getUnreadNotificationa = async (req, res) => {
             user: req.user._id,
         });
 
-        console.log("user", req.user._id);
+        // console.log("user", req.user._id);
 
 
         return res.status(200).json({

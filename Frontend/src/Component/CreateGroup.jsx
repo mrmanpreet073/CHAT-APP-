@@ -1,11 +1,16 @@
 import api from "@/Utils/axios";
-import { useEffect, useState } from "react";
+import { User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function CreateGroup({ open, onClose, setShowCreateGroup, showCreateGroup }) {
     const [groupName, setGroupName] = useState("");
     const [selectedMembers, setSelectedMembers] = useState([]);
     const [users, setUsers] = useState([]);
+
+    const [groupImage, setGroupImage] = useState(null);
+    const imageInputRef = useRef(null);
+    const [creating, setCreating] = useState(false);
 
 
     const handleMemberSelect = (userId) => {
@@ -19,32 +24,41 @@ export default function CreateGroup({ open, onClose, setShowCreateGroup, showCre
     };
 
     const createGroup = async () => {
-
         try {
+            setCreating(true);
 
-            const response = await api.post("chat/new", {
-                name: groupName,
-                members: selectedMembers
-            })
+            const formData = new FormData();
+
+            formData.append("name", groupName);
+
+            selectedMembers.forEach((memberId) => {
+                formData.append("members", memberId);
+            });
+
+            if (groupImage) {
+                formData.append("avatar", groupImage);
+            }
+
+            const response = await api.post("/chat/new", formData);
 
             if (response.data.success) {
-                toast.success("Group Created Successfully ")
-                setShowCreateGroup(false)
+                toast.success("Group Created Successfully");
+                setShowCreateGroup(false);
             }
 
         } catch (error) {
-            console.log(error.message);
-            toast.error(error.message)
+            console.log(error.response);
+            toast.error(error.response?.data?.message || error.message);
+        } finally {
+            setCreating(false);
         }
-
-    }
-
+    };
 
     const fetchUsers = async () => {
         try {
             const response = await api.post("user/friends")
-            console.log("response ", response);
-            
+            // console.log("response ", response);
+
             if (response.data.success) {
                 setUsers(response.data.friends)
             }
@@ -125,7 +139,39 @@ export default function CreateGroup({ open, onClose, setShowCreateGroup, showCre
                 </div>
 
                 {/* Body */}
-                <div className="p-5">
+                <div className="my-1 flex flex-col items-center">
+                    <div
+                        onClick={() => imageInputRef.current.click()}
+                        className="flex  h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-[#111b21] border border-[#3b4a54]"
+                    >
+                        {groupImage ? (
+                            <img
+                                src={URL.createObjectURL(groupImage)}
+                                alt="Group"
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-sm text-gray-400">
+                                <User />
+                            </span>
+                        )}
+                    </div>
+
+                    <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+
+                            if (!file) return;
+
+                            setGroupImage(file);
+                        }}
+                    />
+                </div>
+                <div className="px-5 py-3">
 
                     <input
                         type="text"
