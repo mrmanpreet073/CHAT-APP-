@@ -26,7 +26,12 @@ const schema = new mongoose.Schema({
                 required: false
             }
         }
-    ]
+    ],
+    messageType: {
+        type: String,
+        enum: ["text", "attachment", "system"],
+        default: "text"
+    }
 },
     {
         timestamps: true

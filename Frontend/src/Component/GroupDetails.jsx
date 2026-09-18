@@ -1,3 +1,5 @@
+import { getSocket } from "@/Socket";
+import api from "@/Utils/axios";
 import {
     MoreVertical,
     Users,
@@ -5,49 +7,63 @@ import {
     UserPlus,
     Trash2,
     LogOut,
-} from "lucide-react"; import { useState } from "react";
+} from "lucide-react"; import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import AddMembersDialog from "./AddMembersDialog";
 
-export default function GroupDetails({ group, onClose, onRemoveMember, onAddMembers, }) {
+export default function GroupDetails({ group, onClose, onRemoveMember, onAddMembers, selectedGroup, setSelectedGroup }) {
     const [memberMenu, setMemberMenu] = useState(null);
+    const [showAddMembers, setShowAddMembers] = useState(false);
+
+
+    const socket = getSocket()
+
+
+
 
     const creator = group.members.find(
         (member) => member._id === group.creator
     );
 
-    const handleAddMembers = () => {
-        // console.log("Open Add Members");
-    };
+    // const handleAddMembers = () => {
+    //     alert("hasn't been implemented yet")
+    // };
 
-    const handleRemoveMember = (memberId) => {
-        setGroups((prev) =>
-            prev.map((group) => {
-                if (group._id !== selectedGroup._id) {
-                    return group;
-                }
-
-                return {
-                    ...group,
-                    members: group.members.filter(
-                        (member) => member._id !== memberId
-                    ),
-                };
+    const handleRemoveMember = async (memberId) => {
+        try {
+            const response = await api.post("/chat/removeMember", {
+                userId: memberId,
+                chatId: selectedGroup._id
             })
-        );
-
-        setSelectedGroup((prev) => ({
-            ...prev,
-            members: prev.members.filter(
-                (member) => member._id !== memberId
-            ),
-        }));
+            if (response.data.success) {
+                toast.success(response.data.message)
+            }
+        } catch (error) {
+            console.log(error.response);
+            toast.error(error.message)
+        }
     };
 
-    const handleLeaveGroup = () => {
-        // console.log("Leave Group");
-    }
+    const handleLeaveGroup = async () => {
+        try {
+            const response = await api.post(
+                `/chat/leaveGroup/${selectedGroup._id}`
+            );
 
+            if (response.data.success) {
+                toast.success(response.data.message);
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            }
+        } catch (error) {
+            console.log(error.response);
+            toast.error(error.message);
+        }
+    };
     return (
-        <div className="absolute inset-y-0 right-0 z-30 flex w-full max-w-[380px] flex-col border-l border-[#2a3942] bg-[#111b21] shadow-2xl">
+        <>  <div className="absolute inset-y-0 right-0 z-30 flex w-full max-w-[380px] flex-col border-l border-[#2a3942] bg-[#111b21] shadow-2xl">
 
             {/* HEADER */}
 
@@ -133,7 +149,7 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
                         </p>
 
                         <span className="text-xs text-gray-500">
-                            {group.members.length}
+                            {selectedGroup.members.length}
                         </span>
 
                     </div>
@@ -141,8 +157,8 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
                     {/* ADD MEMBERS */}
 
                     <button
-                        onClick={onAddMembers}
-                        className="mb-3 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hover:bg-[#202c33]"
+                        onClick={() => setShowAddMembers(true)}
+                        className=" cursor-pointer mb-3 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left hover:bg-[#202c33]"
                     >
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00a884]">
                             <UserPlus size={19} />
@@ -163,9 +179,9 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
 
                     <div className="space-y-1">
 
-                        {group.members.map((member) => {
+                        {selectedGroup.members.map((member) => {
                             const isCreator =
-                                member._id === group.creator;
+                                member._id === selectedGroup.creator;
 
                             return (
                                 <div
@@ -218,7 +234,7 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
 
                                             <button
                                                 onClick={() => {
-                                                    onRemoveMember(
+                                                    handleRemoveMember(
                                                         member._id
                                                     );
 
@@ -238,15 +254,24 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
                         })}
 
                     </div>
-               <button
-//   onClick={handleLeaveGroup}
-  className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-[#2a3942]"
->
-  <LogOut size={18} />
-  <span>Leave Group</span>
-</button>
+                    <button
+                        onClick={handleLeaveGroup}
+                        className="  cursor-pointer flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-[#2a3942]"
+                    >
+                        <LogOut size={18} />
+                        <span>Leave Group</span>
+                    </button>
                 </div>
             </div>
-        </div>
+        </div >
+            <AddMembersDialog
+                open={showAddMembers}
+                onClose={() => setShowAddMembers(false)}
+                chatId={selectedGroup._id}
+                members={selectedGroup.members}
+            />
+
+        </>
+
     );
 }

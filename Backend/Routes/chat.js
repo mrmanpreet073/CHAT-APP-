@@ -16,6 +16,7 @@ router.post('/message', attachmentUpload,sendAttachmentsValidator, validate, aut
 router.get('/UnreadNotifications', authenticate , controller.getUnreadNotificationa);
 router.post('/clearNotification/:userId', authenticate , controller.markAsRead);
 router.post('/getChatId/:userId', authenticate, controller.getChatId);
+router.post('/getfriends', authenticate, controller.getFriendsToAdd);
 
 router.route("/:id")
   .get(chatIdValidator,validate, authenticate, controller.getChatDetails)

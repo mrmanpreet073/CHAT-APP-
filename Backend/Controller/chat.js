@@ -7,6 +7,7 @@ import { io, userSocketIDs } from "../index.js";
 import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "../Utils/events.js";
 import { Notification } from "../Models/Notification.js";
 import { log } from "console";
+import { getSockets } from "../Utils/helper.js";
 
 export const newGroupChat = async (req, res) => {
 
@@ -119,6 +120,8 @@ export const addMembers = async (req, res, next) => {
             });
         }
 
+        const remainingMembers = chat.members
+
         // Only the group creator can add members
         if (chat.creator.toString() !== req.user._id.toString()) {
             return res.status(403).json({
@@ -206,29 +209,44 @@ export const addMembers = async (req, res, next) => {
             .join(", ");
 
 
-        // --------------------------------------------------
-        // 9. Real-time events
-        // --------------------------------------------------
-
-        // Notify existing group members
-        // emitEvent(
-        //     req,
-        //     ALERT,
-        //     chat.members,
-        //     `${allUsersName} has been added to the group`
-        // );
-
-        // Refresh chat list
-        // emitEvent(
-        //     req,
-        //     REFETCH_CHATS,
-        //     chat.members
-        // );
+        const user = await User.findById(members[0], "name");
 
 
-        // --------------------------------------------------
-        // 10. Send response
-        // --------------------------------------------------
+
+        const addMessage = await Message.create({
+            sender: req.user._id,
+            chat: chatId,
+            content: `${user.name} Added To This group by ${req.user.name}`,
+            messageType: "system"
+        });
+
+        const messageForRealTime = {
+            _id: addMessage._id,
+            content: addMessage.content,
+            sender: {
+                _id: user._id,
+                name: user.name,
+            },
+            chat: chatId,
+            messageType: "system",
+            createdAt: addMessage.createdAt,
+        };
+
+        const membersSocket = getSockets(remainingMembers);
+
+        io.to(membersSocket).emit(NEW_MESSAGE, {
+            chatId,
+            message: messageForRealTime,
+        });
+
+        const updatedChat = await Chat.findById(chatId)
+            .populate("members", "name avatar")
+        // .populate("creator", "name avatar");
+
+        io.to(membersSocket).emit("GROUP_UPDATED", {
+            chatId: updatedChat._id,
+            members: updatedChat.members,
+        });
 
         return res.status(200).json({
             success: true,
@@ -319,18 +337,34 @@ export const removeMember = async (req, res) => {
 
         await chat.save();
 
+        const removedUserSocketId = userSocketIDs.get(userId.toString());
+
+        if (removedUserSocketId) {
+            io.to(removedUserSocketId).emit("REMOVED_FROM_GROUP", {
+                chatId,
+            });
+        }
+
+        const updatedChat = await Chat.findById(chatId)
+            .populate("members", "name avatar")
+
+        const memberIds = updatedChat.members.map(member => member._id.toString());
+
+        const membersSocket = getSockets(memberIds);
+
+        io.to(membersSocket).emit("GROUP_UPDATED", {
+            chatId: updatedChat._id,
+            members: updatedChat.members,
+        });
+
+
+
         return res.status(200).json({
             success: true,
             message: `${userThatWillBeRemoved.name} has been removed from the group`,
         });
 
-        // Notify remaining/all members
-        // emitEvent(req, ALERT, chat.members, {
-        //     message: `${userThatWillBeRemoved.name} has been removed from the group`,
-        //     chatId,
-        // });
 
-        // emitEvent(req, REFETCH_CHATS, allChatMembers);
 
     } catch (error) {
         return res.status(500).json({
@@ -376,12 +410,12 @@ export const leaveGroup = async (req, res) => {
             (member) => member.toString() !== req.user._id.toString()
         );
 
-        if (remainingMembers.length < 3) {
-            return res.status(400).json({
-                success: false,
-                message: "Group must have at least 3 members"
-            });
-        }
+        // if (remainingMembers.length < 3) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Group must have at least 3 members"
+        //     });
+        // }
 
         if (chat.creator.toString() === req.user._id.toString()) {
 
@@ -394,10 +428,45 @@ export const leaveGroup = async (req, res) => {
 
         await chat.save();
 
-        // emitEvent(req, ALERT, chat.members, {
-        //     chatId,
-        //     message: `User ${user.name} has left the group`,
-        // });
+
+        const leaveMessage = await Message.create({
+            sender: req.user._id,
+            chat: chatId,
+            content: `${user.name} left the group`,
+            messageType: "system"
+        });
+
+        const messageForRealTime = {
+            _id: leaveMessage._id,
+            content: leaveMessage.content,
+            sender: {
+                _id: user._id,
+                name: user.name,
+            },
+            chat: chatId,
+            messageType: "system",
+            createdAt: leaveMessage.createdAt,
+        };
+
+        const membersSocket = getSockets(remainingMembers);
+
+        console.log("remainingMembers ", remainingMembers);
+        console.log("member socket ", membersSocket);
+
+
+        io.to(membersSocket).emit(NEW_MESSAGE, {
+            chatId,
+            message: messageForRealTime,
+        });
+
+        const updatedChat = await Chat.findById(chatId)
+            .populate("members", "name avatar")
+        // .populate("creator", "name avatar");
+
+        io.to(membersSocket).emit("GROUP_UPDATED", {
+            chatId: updatedChat._id,
+            members: updatedChat.members,
+        });
 
         return res.status(200).json({
             success: true,
@@ -832,60 +901,48 @@ export const markAsRead = async (req, res) => {
 
     }
 };
-
 export const getFriendsToAdd = async (req, res) => {
     try {
-        const { chatId } = req.params;
-        const userId = req.user._id;
+        const { chatId, memberIds } = req.body;
 
-        const chat = await Chat.findById(chatId).select("members");
-
-        if (!chat) {
-            return res.status(404).json({
+        if (!chatId || !memberIds) {
+            return res.status(400).json({
                 success: false,
-                message: "Chat not found",
+                message: "chatId and memberIds are required",
             });
         }
 
-        // Check current user is a member of this group
-        if (!chat.members.some((id) => id.toString() === userId.toString())) {
-            return res.status(403).json({
-                success: false,
-                message: "You are not a member of this group",
-            });
-        }
+        const chats = await Chat.find({
+            members: req.user._id,
+            groupChat: false,
+        }).populate("members", "name avatar bio");
 
-        // Get my accepted friends
-        const requests = await Request.find({
-            $or: [
-                { sender: userId, status: "accepted" },
-                { receiver: userId, status: "accepted" },
-            ],
-        }).select("sender receiver");
+        const friends = chats
+            .map(({ members }) => {
+                const friend = members.find(
+                    member => member._id.toString() !== req.user._id.toString()
+                );
 
-        const friendIds = requests.map((request) =>
-            request.sender.toString() === userId.toString()
-                ? request.receiver
-                : request.sender
+                if (!friend) return null;
+
+                return {
+                    _id: friend._id,
+                    name: friend.name,
+                    avatar: friend.avatar,
+                    bio: friend.bio,
+                };
+            })
+            .filter(Boolean);
+
+        const friendsToAdd = friends.filter(
+            friend => !memberIds.includes(friend._id.toString())
         );
-
-        // Remove users already in the group
-        const existingMembers = new Set(
-            chat.members.map((id) => id.toString())
-        );
-
-        const availableFriendIds = friendIds.filter(
-            (id) => !existingMembers.has(id.toString())
-        );
-
-        const friends = await User.find({
-            _id: { $in: availableFriendIds },
-        }).select("name avatar");
 
         return res.status(200).json({
             success: true,
-            friends,
+            friends: friendsToAdd,
         });
+
     } catch (error) {
         return res.status(500).json({
             success: false,
