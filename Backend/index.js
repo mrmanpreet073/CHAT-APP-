@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 const server = createServer(app);
 export const io = new Server(server, {
     cors: {
-        origin: ["https://chat-app-lyart-five-73.vercel.app"],
+        origin: ["https://chat-qa33nl2u4-mrmanpreet073s-projects.vercel.app"],
         credentials: true,
     }
 });
@@ -34,7 +34,7 @@ export const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: "https://chat-app-lyart-five-73.vercel.app",
+    origin: "https://chat-qa33nl2u4-mrmanpreet073s-projects.vercel.app",
     credentials: true,
 }));
 
