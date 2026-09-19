@@ -44,25 +44,25 @@ export default function Sidebar({
       chatId: incomingChatId,
       senderId,
     }) => {
-      console.log("🔥 REALTIME ALERT RECEIVED");
-      console.log("incomingChatId:", incomingChatId);
-      console.log("senderId:", senderId);
-      console.log("user.id:", user?.id);
-      console.log("chatId:", chatId);
+      // console.log("🔥 REALTIME ALERT RECEIVED");
+      // console.log("incomingChatId:", incomingChatId);
+      // console.log("senderId:", senderId);
+      // console.log("user.id:", user?.id);
+      // console.log("chatId:", chatId);
 
       // Don't show notification for our own message
       if (String(senderId) === String(user?.id)) {
-        console.log("Same User");
+        // console.log("Same User");
         return;
       }
 
       // Don't show notification if this chat is currently open
       if (String(chatId) === String(incomingChatId)) {
-        console.log("Chat Open");
+        // console.log("Chat Open");
         return;
       }
 
-      console.log("✅ Updating unread");
+      // console.log("✅ Updating unread");
 
       setUnreadMessages((prev) => ({
         ...prev,
@@ -79,7 +79,7 @@ export default function Sidebar({
 
   // Debug unread state
   useEffect(() => {
-    console.log("🔔 UNREAD STATE:", unreadMessages);
+    // console.log("🔔 UNREAD STATE:", unreadMessages);
   }, [unreadMessages]);
 
   // Fetch existing unread notifications from database
@@ -141,14 +141,10 @@ export default function Sidebar({
         ) : (
           chats.map((chat) => {
 
-            console.log("CHAT FROM SIDEBAR:", chat);
+            // console.log("CHAT FROM SIDEBAR:", chat);
 
-            console.log(
-              "CHAT ID:",
-              chat?._id,
-              "UNREAD:",
-              unreadMessages?.[chat?._id]
-            );
+            // console.log("CHAT ID:",chat?._id,"UNREAD:",unreadMessages?.[chat?._id]);
+            
             const isSelected =
               String(selectedChat?._id) === String(chat?._id);
 
