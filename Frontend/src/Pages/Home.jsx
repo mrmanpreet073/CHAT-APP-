@@ -25,9 +25,9 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="text-sm text-[#8696a0] hover:text-[#e9edef] transition-colors font-medium hidden sm:block">
+          {/* <button className="text-sm text-[#8696a0] hover:text-[#e9edef] transition-colors font-medium hidden sm:block">
             Features
-          </button>
+          </button> */}
           <button className="bg-[#00a884] hover:bg-[#029071] text-[#111b21] font-semibold text-sm px-5 py-2.5 rounded-full transition-all duration-200"
           onClick={()=>navigate("/signUp")}>
             Sign Up
@@ -55,7 +55,8 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#00a884] hover:bg-[#029071] text-[#111b21] font-bold px-8 py-3.5 rounded-full text-base transition-all duration-200 shadow-lg hover:shadow-emerald-900/20">
+            <button onClick={()=> navigate("/signup")}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#00a884] hover:bg-[#029071] text-[#111b21] font-bold px-8 py-3.5 rounded-full text-base transition-all duration-200 shadow-lg hover:shadow-emerald-900/20">
               <span>Start Chatting Now</span>
               <ArrowRight size={18} />
             </button>
