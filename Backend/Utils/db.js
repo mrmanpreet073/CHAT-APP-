@@ -1,16 +1,28 @@
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 
-async function connectDb() {
+// async function connectDb() {
 
+//     try {
+//         const con = await mongoose.connect(process.env.MONGO_URI);
+//         console.log(`connection sucessfull,${con.connection.host}`);
+
+
+//     } catch (error) {
+//         console.log('connection unsucessfull');
+
+//     }
+// }
+
+// export default connectDb
+
+const connectDb = async () => {
     try {
-        const con = await mongoose.connect(process.env.MONGO_URI);
-        console.log(`connection sucessfull,${con.connection.host}`);
-
-
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("MongoDB connected successfully");
     } catch (error) {
-        console.log('connection unsucessfull');
-
+        console.error("MongoDB connection failed:", error);
+        throw error;
     }
-}
+};
 
-export default connectDb
+export default connectDb;
