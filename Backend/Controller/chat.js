@@ -964,3 +964,101 @@ export const getFriendsToAdd = async (req, res) => {
         });
     }
 };
+
+export const updateGroup = async (req, res) => {
+    try {
+        const { chatId, name } = req.body;
+
+        if (!chatId) {
+            return res.status(400).json({
+                success: false,
+                message: "Chat ID is required",
+            });
+        }
+
+        const chat = await Chat.findById(chatId);
+
+        if (!chat) {
+            return res.status(404).json({
+                success: false,
+                message: "Group not found",
+            });
+        }
+
+        if (!chat.groupChat) {
+            return res.status(400).json({
+                success: false,
+                message: "This is not a group chat",
+            });
+        }
+
+        // Only group creator can update group details
+        if (chat.creator.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Only group creator can update group details",
+            });
+        }
+
+        // Update group name if provided
+        if (name !== undefined) {
+            if (!name.trim()) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Group name cannot be empty",
+                });
+            }
+
+            chat.name = name.trim();
+        }
+
+        // Update group image if provided
+        if (req.file) {
+            const result = await uploadToCloudinary(req.file.buffer);
+
+            chat.image = {
+                public_id: result.public_id,
+                url: result.secure_url,
+            };
+        }
+
+        await chat.save();
+
+        const updatedChat = await Chat.findById(chatId)
+            .populate("members", "name avatar");
+
+        // Get member IDs for Socket.IO
+        const memberIds = updatedChat.members.map(
+            member => member._id.toString()
+        );
+
+        const membersSocket = getSockets(memberIds);
+
+        // Send updated group information to all members
+        io.to(membersSocket).emit("GROUP_UPDATED", {
+            chatId: updatedChat._id,
+            name: updatedChat.name,
+            image: updatedChat.image,
+            members: updatedChat.members,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Group updated successfully",
+            group: {
+                _id: updatedChat._id,
+                name: updatedChat.name,
+                image: updatedChat.image,
+                members: updatedChat.members,
+            },
+        });
+
+    } catch (error) {
+        console.error("Update group error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};

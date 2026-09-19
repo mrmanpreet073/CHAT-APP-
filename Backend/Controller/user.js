@@ -30,16 +30,7 @@ export const health = async (req, res) => {
 export const register = async (req, res) => {
     try {
 
-        console.log("!. Controller Reached")
-
         const { name, userName, password } = req.body;
-
-        console.log("2 - body received", {
-            name,
-            userName,
-            password,
-            file: !!req.file
-        });
 
         if (!name || !userName || !password) {
             return res.status(400).json({
@@ -48,10 +39,7 @@ export const register = async (req, res) => {
             });
         }
 
-
         const existingUser = await User.findOne({ userName });
-
-        console.log("3 - User.findOne completed");
 
         if (existingUser) {
             return res.status(409).json({
@@ -62,21 +50,17 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        console.log("4 - bcrypt completed");
 
         let avatar = {};
-        console.log("5 - starting Cloudinary upload");
 
         if (req.file) {
 
             const result = await uploadToCloudinary(req.file.buffer);
-            console.log("Cloudinary result:", result);
 
             avatar = {
                 public_id: result.public_id,
                 url: result.url,
             };
-            console.log("6 - Cloudinary upload completed", result);
 
         } else {
             return res.status(400).json({
@@ -84,7 +68,6 @@ export const register = async (req, res) => {
                 message: "Avatar is required"
             });
         }
-        console.log("7 - creating user");
 
         const user = await User.create({
             name,
@@ -92,7 +75,6 @@ export const register = async (req, res) => {
             password: hashedPassword,
             avatar,
         });
-        console.log("8 - user created");
         const accessToken = jwt.sign(
             {
                 userId: user._id,
@@ -289,12 +271,12 @@ export const sendFriendRequest = async (req, res, next) => {
 
         const receiverSocketId = userSocketIDs.get(userId.toString());
 
-        console.log("Receiver User ID:", userId.toString());
-        console.log("Receiver Socket ID:", receiverSocketId);
-        console.log("Socket Map:", userSocketIDs);
+        // console.log("Receiver User ID:", userId.toString());
+        // console.log("Receiver Socket ID:", receiverSocketId);
+        // console.log("Socket Map:", userSocketIDs);
 
         if (receiverSocketId) {
-            console.log("Sending NOTIFICATION");
+            // console.log("Sending NOTIFICATION");
             io.to(receiverSocketId).emit("NOTIFICATION", {
                 request: {
                     _id: newRequest._id,
@@ -441,13 +423,94 @@ export const getMyNotifications = async (req, res) => {
 
 }
 
+// export const getMyFriends = async (req, res) => {
+//     try {
+//         const chatId = req.query.chatId;
+
+//         // console.log("req.user._id", req.user._id);
+
+
+
+//         // Find all private chats of the logged-in user
+//         const chats = await Chat.find({
+//             members: req.user._id,
+//             groupChat: false,
+//         }).populate("members", "name avatar bio");
+
+//         // console.log(chats);
+
+
+//         // Get the other user from each private chat
+//         const friends = chats.map(({ members }) => {
+//             // console.log("MEMBERS:", members);
+//             // console.log("CURRENT USER:", req.user._id);
+
+//             const otherUser = getOtherMember(
+//                 members,
+//                 req.user._id
+//             );
+
+//             // console.log("OTHER USER:", otherUser);
+//             // console.log("BIO:", otherUser);
+//             // console.log("TYPE:", typeof otherUser.bio);
+
+//             return {
+//                 _id: otherUser._id,
+//                 name: otherUser.name,
+//                 avatar: otherUser.avatar?.url || "",
+//                 bio: otherUser.bio || ""
+//             };
+//         });
+
+
+
+//         // If chatId is provided,
+//         // return only friends who are not already in that group
+//         if (chatId) {
+//             const chat = await Chat.findById(chatId);
+
+//             if (!chat) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: "Chat not found",
+//                 });
+//             }
+
+//             const availableFriends = friends.filter(
+//                 (friend) =>
+//                     !chat.members.some(
+//                         (member) =>
+//                             member.toString() ===
+//                             friend._id.toString()
+//                     )
+//             );
+
+//             return res.status(200).json({
+//                 success: true,
+//                 friends: availableFriends,
+
+//             });
+//         }
+
+//         // No chatId → return all friends
+//         return res.status(200).json({
+//             success: true,
+//             friends,
+
+//         });
+
+//     } catch (error) {
+//         return res.status(500).json({
+//             success: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+
 export const getMyFriends = async (req, res) => {
     try {
         const chatId = req.query.chatId;
-
-        // console.log("req.user._id", req.user._id);
-
-
 
         // Find all private chats of the logged-in user
         const chats = await Chat.find({
@@ -455,32 +518,25 @@ export const getMyFriends = async (req, res) => {
             groupChat: false,
         }).populate("members", "name avatar bio");
 
-        // console.log(chats);
-
-
         // Get the other user from each private chat
-        const friends = chats.map(({ members }) => {
-            // console.log("MEMBERS:", members);
-            // console.log("CURRENT USER:", req.user._id);
+        const friends = chats
+            .map((chat) => {
+                const otherUser = getOtherMember(
+                    chat.members,
+                    req.user._id
+                );
 
-            const otherUser = getOtherMember(
-                members,
-                req.user._id
-            );
+                if (!otherUser) return null;
 
-            // console.log("OTHER USER:", otherUser);
-            // console.log("BIO:", otherUser);
-            // console.log("TYPE:", typeof otherUser.bio);
-
-            return {
-                _id: otherUser._id,
-                name: otherUser.name,
-                avatar: otherUser.avatar?.url || "",
-                bio: otherUser.bio || ""
-            };
-        });
-
-
+                return {
+                    _id: otherUser._id,       // User ID
+                    chatId: chat._id,         // Chat ID
+                    name: otherUser.name,
+                    avatar: otherUser.avatar?.url || "",
+                    bio: otherUser.bio || "",
+                };
+            })
+            .filter(Boolean);
 
         // If chatId is provided,
         // return only friends who are not already in that group
@@ -506,7 +562,6 @@ export const getMyFriends = async (req, res) => {
             return res.status(200).json({
                 success: true,
                 friends: availableFriends,
-
             });
         }
 
@@ -514,7 +569,6 @@ export const getMyFriends = async (req, res) => {
         return res.status(200).json({
             success: true,
             friends,
-
         });
 
     } catch (error) {
@@ -524,5 +578,3 @@ export const getMyFriends = async (req, res) => {
         });
     }
 };
-
-

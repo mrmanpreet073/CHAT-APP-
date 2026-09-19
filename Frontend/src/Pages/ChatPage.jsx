@@ -127,7 +127,8 @@ export default function ChatPage() {
             chats={chats}
             setChats={setChats}
             selectedChat={selectedChat}
-            onSelectChat={(chat) => setSelectedChat(chat)}
+            setSelectedChat={ setSelectedChat}
+            chatId={chatId}
             setUnreadMessages={setUnreadMessages}
             unreadMessages={unreadMessages}
           />

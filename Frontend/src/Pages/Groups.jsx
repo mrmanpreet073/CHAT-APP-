@@ -280,18 +280,16 @@ export default function Groups() {
   // Handle New Messages
   useEffect(() => {
 
-    const handleNewMessage = ({ chatId, message }) => {
+    const handleNewMessage = ({ chatId, message, }) => {
 
-      // console.log("Message Received:", message);
 
-      // This message is NEW,
-      // so after rendering we want to go bottom.
       shouldScrollToBottom.current = true;
+      setMessagess((prev) => [...prev, message]);
 
-      setMessagess((prev) => [
-        ...prev,
-        message
-      ]);
+      // setMessagess((prev) => [
+      //   ...prev,
+      //   message
+      // ]);
     };
 
     socket.on(NEW_MESSAGE, handleNewMessage);
@@ -354,6 +352,8 @@ export default function Groups() {
   useEffect(() => {
     const handleGroupUpdated = ({ chatId, members }) => {
       if (chatId !== selectedGroup._id) return;
+
+
 
       setSelectedGroup((prev) => ({
         ...prev,
@@ -478,20 +478,59 @@ export default function Groups() {
   // Notification 
 
   // Get Notification of groups
+  // useEffect(() => {
+  //   const handleMessageAlert = ({ chatId, senderId }) => {
+  //     console.log("handleMessageAlert Run")
+  //     console.log("chatId",chatId)
+  //     console.log("selectedGroup?._id",selectedGroup?._id)
+  //     if (senderId === user?.id) {
+  //       return;
+  //     }
+  //     if (selectedGroup?._id === chatId) {
+  //       console.log("check", selectedGroup?._id === chatId);
+
+  //       return;
+  //     }
+  //     setUnreadMessages((prev) => ({
+  //       ...prev,
+  //       [chatId]: (prev[chatId] || 0) + 1,
+  //     }));
+  //   };
+
+  //   socket.on(NEW_MESSAGE_ALERT, handleMessageAlert);
+
+  //   return () => {
+  //     socket.off(NEW_MESSAGE_ALERT, handleMessageAlert);
+  //   };
+  // }, [socket]);
   useEffect(() => {
-    const handleMessageAlert = ({ chatId }) => {
-      setUnreadMessages((prev) => ({
-        ...prev,
-        [chatId]: (prev[chatId] || 0) + 1,
-      }));
+    const handleMessageAlert = (data) => {
+
+        const chatId = data?.chatId;
+        const senderId = data?.senderId;
+
+        if (senderId === user?.id) {
+            // console.log("Sender is current user");
+            return;
+        }
+
+        if (selectedGroup?._id === chatId) {
+            // console.log("Same group is open");
+            return;
+        }
+
+        setUnreadMessages((prev) => ({
+            ...prev,
+            [chatId]: (prev[chatId] || 0) + 1,
+        }));
     };
 
     socket.on(NEW_MESSAGE_ALERT, handleMessageAlert);
 
     return () => {
-      socket.off(NEW_MESSAGE_ALERT, handleMessageAlert);
+        socket.off(NEW_MESSAGE_ALERT, handleMessageAlert);
     };
-  }, [socket]);
+}, [socket, selectedGroup?._id, user?.id]);
 
   // get Notification on page load
   useEffect(() => {
@@ -562,8 +601,8 @@ export default function Groups() {
   };
 
 
-  console.log(groups);
-  
+  // console.log(groups);
+
 
 
 
@@ -601,7 +640,7 @@ export default function Groups() {
 
           <div className="h-[calc(100%-72px)] overflow-y-auto">
             {groups.map((group) => (
-              
+
               <button
                 key={group._id}
                 onClick={() => handleGroupClick(group)}
@@ -611,7 +650,10 @@ export default function Groups() {
                   }`}
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#2a3942]">
-                 <img src={group.image?.url} alt="" />
+                  <img src={group.image?.url} alt=""
+                    className="h-full w-full object-fit"
+
+                  />
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -670,10 +712,11 @@ export default function Groups() {
                   <ArrowLeft size={22} />
                 </button>
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2a3942]">
-                  <Users
-                    size={20}
-                    className="text-gray-400"
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#2a3942]">
+                  <img
+                    src={selectedGroup.image?.url}
+                    alt={selectedGroup.name}
+                    className="h-full w-full object-fit"
                   />
                 </div>
 
@@ -701,7 +744,7 @@ export default function Groups() {
               {/* MESSAGES */}
 
               <div
-                className="min-h-0 flex-1 overflow-y-auto bg-[#0b141a] p-4"
+                className="min-h-0 flex-1 overflow-y-auto bg-[#0b141a] p-4  scrollbar scrollbar-thumb-gray-700 scrollbar-thin"
                 ref={messagesContainerRef}
                 onScroll={handleScroll}
               >

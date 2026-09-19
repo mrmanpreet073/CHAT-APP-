@@ -7,13 +7,23 @@ import {
     UserPlus,
     Trash2,
     LogOut,
-} from "lucide-react"; import { useEffect, useState } from "react";
+    Pencil,
+    Check,
+    Camera,
+} from "lucide-react"; import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import AddMembersDialog from "./AddMembersDialog";
 
 export default function GroupDetails({ group, onClose, onRemoveMember, onAddMembers, selectedGroup, setSelectedGroup }) {
     const [memberMenu, setMemberMenu] = useState(null);
     const [showAddMembers, setShowAddMembers] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [groupName, setGroupName] = useState(group.name);
+
+
+    const [selectedImage, setSelectedImage] = useState(null);
+
+    const imageInputRef = useRef(null);
 
 
     const socket = getSocket()
@@ -62,6 +72,51 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
             toast.error(error.message);
         }
     };
+
+
+    const handleUpdateGroup = async () => {
+        try {
+            if (!groupName.trim()) {
+                toast.error("Group name cannot be empty");
+                return;
+            }
+
+            const formData = new FormData();
+
+            formData.append("chatId", selectedGroup._id);
+            formData.append("name", groupName.trim());
+
+            if (selectedImage) {
+                formData.append("avatar", selectedImage);
+            }
+
+            const response = await api.patch(
+                "/chat/update-group",
+                formData
+            );
+
+            if (response.data.success) {
+                setSelectedGroup((prev) => ({
+                    ...prev,
+                    name: response.data.group.name,
+                    image: response.data.group.image,
+                }));
+
+                setIsEditingName(false);
+                setSelectedImage(null);
+
+                toast.success("Group updated successfully");
+            }
+        } catch (error) {
+            console.log(error.response);
+
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to update group"
+            );
+        }
+    };
+
     return (
         <>  <div className="absolute inset-y-0 right-0 z-30 flex w-full max-w-[380px] flex-col border-l border-[#2a3942] bg-[#111b21] shadow-2xl">
 
@@ -89,23 +144,98 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
                 {/* GROUP IMAGE */}
 
                 <div className="flex flex-col items-center px-5 py-7">
+                    <div
+                        className="relative h-28 w-28 cursor-pointer"
+                        onClick={() => {
+                            if (isEditingName) {
+                                imageInputRef.current.click();
+                            }
+                        }}
+                    >
+                        <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#202c33]">
+                            <img
+                                src={
+                                    selectedImage
+                                        ? URL.createObjectURL(selectedImage)
+                                        : group.image?.url
+                                }
+                                alt={group.name}
+                                className="h-full w-full object-cover"
+                            />
+                        </div>
 
-                    <div className="flex h-32 w-32 items-center justify-center rounded-full bg-[#202c33]">
-                        <Users
-                            size={55}
-                            className="text-gray-500"
+                        {isEditingName && (
+                            <div className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#00a884] text-white shadow hover:bg-green-700">
+                                <Camera size={16}
+                                    className="" />
+                            </div>
+                        )}
+
+                        <input
+                            ref={imageInputRef}
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+
+                                if (file) {
+                                    setSelectedImage(file);
+                                }
+                            }}
                         />
                     </div>
 
-                    <h2 className="mt-4 text-xl font-semibold">
-                        {group.name}
-                    </h2>
+                    {/* Group Name */}
+                    <div className="mt-4 flex items-center gap-2">
+                        {isEditingName ? (
+                            <>
+                                <input
+                                    type="text"
+                                    value={groupName}
+                                    onChange={(e) => setGroupName(e.target.value)}
+                                    autoFocus
+                                    className="w-48 rounded-lg border border-[#3b4a54] bg-[#202c33] px-3 py-2 text-center text-lg font-semibold text-white outline-none focus:border-[#00a884]"
+                                />
+
+                                <button
+                                    onClick={handleUpdateGroup}
+                                    className="rounded-full p-2 text-green-400 hover:bg-[#2a3942]"
+                                >
+                                    <Check size={18} />
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setGroupName(group.name);
+                                        setSelectedImage(null);
+                                        setIsEditingName(false);
+                                    }}
+                                    className="rounded-full p-2 text-red-400 hover:bg-[#2a3942]"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <h2 className="text-xl font-semibold">
+                                    {group.name}
+                                </h2>
+
+                                <button
+                                    onClick={() => setIsEditingName(true)}
+                                    className="rounded-full p-2 text-gray-400 hover:bg-[#2a3942] hover:text-white"
+                                >
+                                    <Pencil size={17} />
+                                </button>
+                            </>
+                        )}
+                    </div>
 
                     <p className="mt-1 text-sm text-gray-400">
                         {group.members.length} members
                     </p>
                 </div>
-
                 {/* CREATOR */}
 
                 <div className="border-y border-[#202c33] bg-[#162127] px-5 py-4">

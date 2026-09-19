@@ -64,16 +64,16 @@ io.on("connection", (socket) => {
     const user = socket.user;
 
     userSocketIDs.set(user._id.toString(), socket.id);
-    console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
+    // console.log("USER CONNECTED:", user._id.toString(), "SOCKET:", socket.id);
 
     socket.on("disconnect", () => {
-        console.log("USER DISCONNECTED:", user._id.toString(), "SOCKET:", socket.id);
+        // console.log("USER DISCONNECTED:", user._id.toString(), "SOCKET:", socket.id);
         if (userSocketIDs.get(user._id.toString()) === socket.id) {
             userSocketIDs.delete(user._id.toString());
         }
     });
 
-    socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
+socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
         try {
             // 1. Save message
             const messageForDB = {
@@ -129,6 +129,7 @@ io.on("connection", (socket) => {
                 // Group realtime notification
                 io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
                     chatId,
+                    senderId: socket.user._id.toString(),
                 });
 
             } else {
@@ -154,6 +155,8 @@ io.on("connection", (socket) => {
                 // Your existing 1-to-1 realtime notification
                 io.to(membersSocket).emit(NEW_MESSAGE_ALERT, {
                     userId: user._id,
+                    senderId: socket.user._id.toString(),
+                    chatId
                 });
             }
 
@@ -162,6 +165,7 @@ io.on("connection", (socket) => {
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
+                
             });
 
             // 6. Your existing alert

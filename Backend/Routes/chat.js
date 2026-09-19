@@ -4,23 +4,24 @@ import { authenticate } from '../Middleware/auth.js';
 import { attachmentUpload, singleAvatar } from '../Middleware/multer.js';
 import { addMemberValidator, chatIdValidator, newGroupValidator, removeMemberValidator, renameValidator, sendAttachmentsValidator, validate } from '../Validator/chat.js';
 
-const router = Router(); 
+const router = Router();
 
-router.post('/new', singleAvatar,newGroupValidator, validate, authenticate , controller.newGroupChat);
+router.post('/new', singleAvatar, newGroupValidator, validate, authenticate, controller.newGroupChat);
 router.get('/myChats', authenticate, controller.getMyChats);
 router.get('/myGroups', authenticate, controller.getMyGroups);
 router.post('/addMembers', addMemberValidator, validate, authenticate, controller.addMembers);
 router.post('/removeMember', removeMemberValidator, validate, authenticate, controller.removeMember);
 router.post('/leaveGroup/:id', authenticate, controller.leaveGroup);
-router.post('/message', attachmentUpload,sendAttachmentsValidator, validate, authenticate , controller.sendAttachments);
-router.get('/UnreadNotifications', authenticate , controller.getUnreadNotificationa);
-router.post('/clearNotification/:userId', authenticate , controller.markAsRead);
+router.post('/message', attachmentUpload, sendAttachmentsValidator, validate, authenticate, controller.sendAttachments);
+router.get('/UnreadNotifications', authenticate, controller.getUnreadNotificationa);
+router.post('/clearNotification/:userId', authenticate, controller.markAsRead);
 router.post('/getChatId/:userId', authenticate, controller.getChatId);
 router.post('/getfriends', authenticate, controller.getFriendsToAdd);
-
+router.patch("/update-group", authenticate, singleAvatar, controller.updateGroup
+);
 router.route("/:id")
-  .get(chatIdValidator,validate, authenticate, controller.getChatDetails)
-  .put(renameValidator,validate,authenticate, controller.renameGroup)
+  .get(chatIdValidator, validate, authenticate, controller.getChatDetails)
+  .put(renameValidator, validate, authenticate, controller.renameGroup)
 //   .delete(chatIdValidator(), deleteChat);
 
 router.get('/getChatMessages/:id', authenticate, controller.getMessages);

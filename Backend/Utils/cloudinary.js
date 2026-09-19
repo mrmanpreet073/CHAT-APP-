@@ -7,19 +7,12 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-// console.log("Cloudinary config:", {
-//     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//     api_key: process.env.CLOUDINARY_API_KEY,
-//     api_secret_exists: !!process.env.CLOUDINARY_API_SECRET,
-// });
 
 export default cloudinary;
 
 export const uploadToCloudinary = (buffer) => {
     return new Promise((resolve, reject) => {
 
-        console.log("Cloudinary upload started");
-        console.log("Buffer size:", buffer.length);
 
         const stream = cloudinary.uploader.upload_stream(
             {
@@ -27,23 +20,16 @@ export const uploadToCloudinary = (buffer) => {
             },
             (error, result) => {
 
-                console.log("Cloudinary callback called");
 
                 if (error) {
-                    console.log("Cloudinary ERROR:", error);
                     reject(error);
                 } else {
-                    console.log("Cloudinary SUCCESS");
                     resolve(result);
                 }
             }
         );
 
-        console.log("Upload stream created");
-
         stream.end(buffer);
-
-        console.log("Buffer sent to stream");
     });
 };
 
@@ -61,10 +47,7 @@ export const uploadFilesToCloudinary = async (files = []) => {
         );
 
         const results = await Promise.all(uploadPromises);
-
-        console.log("Result = ",results);
         
-
         return results.map((result) => ({
             public_id: result.public_id,
             url: result.secure_url,

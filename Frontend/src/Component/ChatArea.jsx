@@ -16,7 +16,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
   const socket = getSocket();
 
-  console.log("cht=", chat);
+  // console.log("cht=", chat);
 
 
   const [messages, setMessages] = useState([]);
@@ -73,7 +73,7 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
   useEffect(() => {
 
     const handleNewMessage = ({ chatId: incomingChatId, message }) => {
-      if (incomingChatId.toString() !== chatId.toString()) return;
+      // if (incomingChatId.toString() !== chatId.toString()) return;
 
       shouldScrollToBottom.current = true;
       setMessages((prev) => [...prev, message]);
@@ -359,9 +359,9 @@ export default function ChatArea({ chat, onBack, onToggleProfile, chatId, member
 
         {messages.map((msg) => {
 
-          console.log(msg);
-          console.log("msg.sender._id", msg.sender._id);
-          console.log("chat._id", chat._id);
+          // console.log(msg);
+          // console.log("msg.sender._id", msg.sender._id);
+          // console.log("chat._id", chat._id);
 
           const isMyMessage =
             msg.sender._id.toString() !== chat._id.toString()
