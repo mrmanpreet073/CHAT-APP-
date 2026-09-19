@@ -47,10 +47,15 @@ export default function GroupDetails({ group, onClose, onRemoveMember, onAddMemb
             })
             if (response.data.success) {
                 toast.success(response.data.message)
+            } 
+            if(!response.data.success) {
+                toast.notify(response.data.message)
+
             }
+
         } catch (error) {
-            console.log(error.response);
-            toast.error(error.message)
+            // console.log(error.response);
+            // toast.error(error.message)
         }
     };
 

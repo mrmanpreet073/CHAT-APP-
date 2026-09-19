@@ -238,7 +238,7 @@ const sampleMessages = {
 
 
 export default function Groups() {
-  const [groups, setGroups] = useState(sampleGroups);
+  const [groups, setGroups] = useState();
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [message, setMessage] = useState("");
@@ -599,11 +599,6 @@ export default function Groups() {
       return updated;
     });
   };
-
-
-  // console.log(groups);
-
-
 
 
   return (
