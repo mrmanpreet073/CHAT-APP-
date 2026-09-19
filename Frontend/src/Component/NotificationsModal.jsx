@@ -97,7 +97,7 @@ export default function NotificationsModal({ isOpen, onClose, onAccept, onReject
               >
                 {/* Sender Info with Avatar Handling */}
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  {req.sender?.avatar?.url ? (
+                  {req.sender?.avatar ? (
                     <img
                       src={req.sender.avatar}
                       alt={req.sender.name}

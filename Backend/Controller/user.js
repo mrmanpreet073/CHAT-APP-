@@ -371,7 +371,21 @@ export const acceptFriendRequest = async (req, res, next) => {
             request.deleteOne(),
         ]);
 
-        //   emitEvent(req, REFETCH_CHATS, members);
+        const senderSocketId = userSocketIDs.get(
+            request.sender._id.toString()
+        );
+
+        const receiverSocketId = userSocketIDs.get(
+            request.receiver._id.toString()
+        );
+
+        if (senderSocketId) {
+            io.to(senderSocketId).emit("REFETCH_CHATS");
+        }
+
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("REFETCH_CHATS");
+        }
 
         return res.status(200).json({
             success: true,

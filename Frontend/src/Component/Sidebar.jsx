@@ -39,6 +39,25 @@ export default function Sidebar({
     fetchChats();
   }, [setChats]);
 
+
+   // accept req realtime user visible 
+  useEffect(() => {
+  const handleRefetchChats = async () => {
+    try {
+      const response = await api.post("/user/friends");
+      setChats(response.data.friends || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  socket.on("REFETCH_CHATS", handleRefetchChats);
+
+  return () => {
+    socket.off("REFETCH_CHATS", handleRefetchChats);
+  };
+}, [socket]);
+
   // Real-time message notifications
   useEffect(() => {
     const handleMessageAlert = ({
