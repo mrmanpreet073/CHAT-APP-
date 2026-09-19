@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as controller from '../Controller/chat.js';
 import { authenticate } from '../Middleware/auth.js';
 import { attachmentUpload, singleAvatar } from '../Middleware/multer.js';
-import { addMemberValidator, chatIdValidator, newGroupValidator, removeMemberValidator, renameValidator, sendAttachmentsValidator, validate } from '../Validator/chat.js';
+import { addMemberValidator, chatIdValidator, newGroupValidator, removeMemberValidator, renameValidator, sendAttachmentsValidator, validate } from '../Validator/Chat.js';
 
 const router = Router();
 
