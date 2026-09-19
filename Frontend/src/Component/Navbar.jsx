@@ -107,6 +107,8 @@ export default function Navbar({ onSearchClick, onNotificationClick, number, set
                   setShowMenu(false);
 
                   setShowMenu(false);
+
+                  navigate("/login");
                 }}
                 className="flex w-full items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-[#2a3942]"
               >

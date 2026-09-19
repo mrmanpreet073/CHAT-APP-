@@ -13,6 +13,7 @@ export default function Sidebar({
   unreadMessages,
   setUnreadMessages,
   setSelectedChat,
+  setIsSearchOpen
 }) {
   const [loading, setLoading] = useState(false);
   const [requests, setRequests] = useState([]);
@@ -44,25 +45,25 @@ export default function Sidebar({
       chatId: incomingChatId,
       senderId,
     }) => {
-      // console.log("🔥 REALTIME ALERT RECEIVED");
-      // console.log("incomingChatId:", incomingChatId);
-      // console.log("senderId:", senderId);
-      // console.log("user.id:", user?.id);
-      // console.log("chatId:", chatId);
+      console.log("🔥 REALTIME ALERT RECEIVED");
+      console.log("incomingChatId:", incomingChatId);
+      console.log("senderId:", senderId);
+      console.log("user.id:", user?.id);
+      console.log("chatId:", chatId);
 
       // Don't show notification for our own message
       if (String(senderId) === String(user?.id)) {
-        // console.log("Same User");
+        console.log("Same User");
         return;
       }
 
       // Don't show notification if this chat is currently open
       if (String(chatId) === String(incomingChatId)) {
-        // console.log("Chat Open");
+        console.log("Chat Open");
         return;
       }
 
-      // console.log("✅ Updating unread");
+      console.log("✅ Updating unread");
 
       setUnreadMessages((prev) => ({
         ...prev,
@@ -79,7 +80,7 @@ export default function Sidebar({
 
   // Debug unread state
   useEffect(() => {
-    // console.log("🔔 UNREAD STATE:", unreadMessages);
+    console.log("🔔 UNREAD STATE:", unreadMessages);
   }, [unreadMessages]);
 
   // Fetch existing unread notifications from database
@@ -138,13 +139,25 @@ export default function Sidebar({
           <div className="p-4 text-center text-[#8696a0]">
             Loading...
           </div>
+        ) : chats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+            <h3 className="text-[#e9edef] text-lg font-semibold">
+              No friends yet
+            </h3>
+
+            <p className="text-[#8696a0] text-sm mt-2">
+              Find people and start a conversation.
+            </p>
+
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="mt-5 px-4 py-2 bg-[#00a884] hover:bg-[#008f72] text-white rounded-lg text-sm font-medium transition"
+            >
+              Make a Friend
+            </button>
+          </div>
         ) : (
           chats.map((chat) => {
-
-            // console.log("CHAT FROM SIDEBAR:", chat);
-
-            // console.log("CHAT ID:",chat?._id,"UNREAD:",unreadMessages?.[chat?._id]);
-            
             const isSelected =
               String(selectedChat?._id) === String(chat?._id);
 
@@ -152,9 +165,7 @@ export default function Sidebar({
               <div
                 key={chat?._id}
                 onClick={() => setSelectedChat(chat)}
-                className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors hover:bg-[#2e3e48e0] border-b border-[#2e3c4526] ${isSelected
-                  ? 'bg-[#202c33]'
-                  : 'bg-[#0b141a]'
+                className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors hover:bg-[#2e3e48e0] border-b border-[#2e3c4526] ${isSelected ? "bg-[#202c33]" : "bg-[#0b141a]"
                   }`}
               >
                 <img

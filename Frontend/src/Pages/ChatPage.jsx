@@ -104,7 +104,7 @@ export default function ChatPage() {
     setIsSearchOpen(false);
   };
 
-  return (
+ return (
     <div className="  flex flex-col h-screen bg-[#111b21] text-[#e9edef] overflow-hidden font-sans">
 
       {/* Top Navbar */}
@@ -131,6 +131,7 @@ export default function ChatPage() {
             chatId={chatId}
             setUnreadMessages={setUnreadMessages}
             unreadMessages={unreadMessages}
+            setIsSearchOpen={setIsSearchOpen}
           />
         </div>
 
