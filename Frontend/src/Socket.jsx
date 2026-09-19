@@ -7,7 +7,7 @@ const getSocket = () => useContext(SocketContext);
 const accessToken = localStorage.getItem("accessToken");
 
 // ✅ created once, at module load — not inside the component
-const socket = io(import.meta.env.VITE_BACKEND_URL, {
+const socket = io("https://chatapp-qnbg.onrender.com", {
   auth: { token: accessToken },
   withCredentials: true,
 });
