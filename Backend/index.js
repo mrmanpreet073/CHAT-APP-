@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 const server = createServer(app);
 export const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173',
+        origin: ["http://localhost:5173", "https://chat-app.vercel.app"],
         credentials: true,
     }
 });
@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
         }
     });
 
-socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
+    socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
         try {
             // 1. Save message
             const messageForDB = {
@@ -98,7 +98,7 @@ socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
 
             // 3. Get chat
             const chat = await Chat.findById(chatId);
-          
+
 
             // 4. ADD THE GROUP/1-TO-1 NOTIFICATION CODE HERE
 
@@ -165,7 +165,7 @@ socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
             io.to(membersSocket).emit(NEW_MESSAGE, {
                 chatId,
                 message: messageForRealTime,
-                
+
             });
 
             // 6. Your existing alert
