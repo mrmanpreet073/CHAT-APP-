@@ -8,6 +8,7 @@ const accessToken = localStorage.getItem("accessToken");
 
 // ✅ created once, at module load — not inside the component
 const socket = io("https://chatapp-qnbg.onrender.com", {
+  transports: ["websocket"],
   auth: { token: accessToken },
   withCredentials: true,
 });
