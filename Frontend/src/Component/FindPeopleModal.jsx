@@ -20,40 +20,28 @@ export default function FindPeopleModal({ isOpen, onClose, onAddUser }) {
   // );
 
 
-  useEffect(() => {
-    if (!searchTerm.trim()) return;
-    const timeOutId = setTimeout(async () => {
-      try {
-        const response = await api.get(`/user/searchUser?name=${searchTerm}`,);
+useEffect(() => {
+  if (!searchTerm.trim()) return;
 
+  const searchUser = async () => {
+    try {
+      const response = await api.get(
+        `/user/searchUser?name=${searchTerm}`
+      );
 
-        if (response.data.success) {
-
-        // console.log("Response", response);
-        // console.log("Users", response.data.users);
-        setUserToDisplay(response.data.users)
-        //   toast.success(response.data.message);
-        }
-
-
-        // navigate("/chat");
-
-      } catch (error) {
-
-        console.error(error.response);
-        toast.error(
-          error.response?.data?.message ||
-          "User Search Failed"
-        );
+      if (response.data.success) {
+        setUserToDisplay(response.data.users);
       }
-      // console.log("Search Value=", searchTerm);
-    }, 1000);
-
-    return () => {
-      clearTimeout(timeOutId)
+    } catch (error) {
+      console.error(error.response);
+      toast.error(
+        error.response?.data?.message || "User Search Failed"
+      );
     }
+  };
 
-  }, [searchTerm]);
+  searchUser();
+}, [searchTerm]);
 
   if (!isOpen) return null;
 
